@@ -21,7 +21,6 @@
 ### タスク完了時 — 品質検証
 
 4. プロジェクトのビルド・Lint・テストコマンドを実行する
-   - ADD フレームワークテスト: `bash .claude/tests/run-all.sh`
    - **失敗した場合 → 実装に差し戻す**。原因分析 → 修正 → 再実行
 5. `addf-code-review-agent` でコードレビューを実施する
 6. `addf-contribution-agent` で ADD フレームワークへのコントリビューション候補を検出する
@@ -44,6 +43,15 @@
 
 ---
 
-## タスク
+## タスク: Plan 0006 — スキル品質向上
 
-（現在タスクなし）
+- [x] 1. `addf-experience.md` の充実化 — 明確な手順・Phase構造・エラー対処を追加
+- [x] 2. スキル description の統一性チェック & 修正
+  - [x] 2a. 全スキルの frontmatter を確認・統一（description の文体・粒度・引数説明）
+  - [x] 2b. `user_invocable` の正確性を確認
+- [x] 3. スキル間の参照整合性修正
+  - [x] 3a. `addf-gui-test.md` に前提条件セクション追加（docs/test-scenarios/ 不在時のエラーハンドリング）
+  - [x] 3b. `optional/addf-gui-test.md` を削除して重複解消
+  - [x] 3c. `addf-knowhow-index` を INDEX.addf.md / INDEX.md の自動選択に対応
+- [x] 4. 品質検証（テスト実行 — 全 PASS）
+- [ ] 5. 完了処理

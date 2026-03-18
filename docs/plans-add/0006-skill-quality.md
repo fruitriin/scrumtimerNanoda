@@ -22,5 +22,14 @@
 - 存在しない参照先があれば修正
 
 ## 影響範囲
-- `.claude/skills/addf-experience.md`
-- `.claude/skills/` 配下の各スキルファイル（軽微な修正）
+- `.claude/commands/addf-experience.md`
+- `.claude/commands/` 配下の各スキルファイル（軽微な修正）
+
+## 実装結果
+
+- [x] 1. `addf-experience.md` の充実化: 2行 → Phase 構造（スキャン→判定→修正→検証）、エラーケース対処、@メンション展開 knowhow への参照を追加
+- [x] 2. description 統一性: `addf-dev-loop` の冗長な description を簡潔化、`addf-knowhow-index` の description に INDEX.addf.md / INDEX.md の使い分けを明記
+- [x] 3. 参照整合性修正:
+  - `addf-gui-test.md` に前提条件セクション追加（`docs/test-scenarios/` 不在時のエラーハンドリング）
+  - `commands/optional/addf-gui-test.md`（重複）を削除
+  - `addf-knowhow-index` を INDEX.addf.md 自動優先に対応

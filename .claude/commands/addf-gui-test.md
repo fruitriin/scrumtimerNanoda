@@ -37,6 +37,10 @@ user_invocable: true
 - 実行前に `addf-gui-test.exp.md` が存在すれば読み、過去の経験（権限問題の回避策、安定しないテストへの対処等）を考慮する
 - 実行後、新たな教訓があれば `addf-gui-test.exp.md` に追記する
 
+## 前提条件
+- `docs/test-scenarios/` ディレクトリが存在すること（存在しない場合は「テストシナリオディレクトリが見つかりません。`docs/test-scenarios/` を作成してシナリオファイルを追加してください」と報告して終了）
+- `.claude/addf-Behavior.toml` が存在すること
+
 ## 注意事項
 - GUI テストはディスプレイ環境が必要
 - Screen Recording / Accessibility 権限が必要な場合がある（`.claude/addfTools/check-screen-recording.sh` で確認可能）

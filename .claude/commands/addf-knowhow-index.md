@@ -1,15 +1,23 @@
 ---
 name: addf-knowhow-index
-description: docs/knowhow/INDEX.md を参照して「何を知っているか」を把握する。reindex 引数でインデックスを再構築する。
+description: |
+  docs/knowhow/ のインデックスを参照して「何を知っているか」を把握する。reindex 引数でインデックスを再構築する。
+  ADD フレームワーク本体では INDEX.addf.md、ダウンストリームプロジェクトでは INDEX.md を使用する。
 context: fork
 user_invocable: true
 ---
 
 # Knowhow インデックス
 
+## インデックスファイルの選択
+
+- ADD フレームワーク本体（このリポジトリ）では `docs/knowhow/INDEX.addf.md` を使用する
+- ダウンストリームプロジェクトでは `docs/knowhow/INDEX.md` を使用する
+- 判定方法: `INDEX.addf.md` が存在すればそちらを優先する
+
 ## 引数
-- **引数なし**: `docs/knowhow/INDEX.md` を読み、内容をそのまま返す
-- **`reindex`**: `docs/knowhow/` の全ファイルを読み込み、`docs/knowhow/INDEX.md` を再構築する
+- **引数なし**: インデックスファイルを読み、内容をそのまま返す
+- **`reindex`**: `docs/knowhow/` の全ファイルを読み込み、インデックスファイルを再構築する
 
 ## 目的
 
@@ -20,7 +28,7 @@ user_invocable: true
 
 ## 引数なしの場合
 
-1. `docs/knowhow/INDEX.md` を読む
+1. インデックスファイル（`INDEX.addf.md` または `INDEX.md`）を読む
 2. 内容をそのまま返す
 
 ---
@@ -32,7 +40,7 @@ user_invocable: true
    - **ファイルパス**
    - **一行要約**: そのファイルが扱う中心トピック（1文）
    - **キーワード**: 実装判断に影響する特徴的な用語（5〜15個）。API名、パターン名、制約名など具体的なものを優先する
-3. `docs/knowhow/INDEX.md` に以下の形式で書き出す:
+3. インデックスファイルに以下の形式で書き出す:
 
 ```markdown
 # Knowhow Index

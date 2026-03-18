@@ -3,9 +3,6 @@ name: addf-dev-loop
 description: |
   TODO.md から未実施タスクを自律的に選んで実装するループ処理。
   `/loop 1h /addf-dev-loop` として使用する。
-  タスク選択基準: 開発に複利が効くもの（ブロッカー解消・インフラ整備・テスト基盤など）を優先し、
-  依存関係がなければ x.y の若番から選ぶ。
-  CLAUDE.md のブートシーケンスと `.claude/Progress.md` の運用ルールに従って実装まで完遂する。
 user_invocable: true
 ---
 
