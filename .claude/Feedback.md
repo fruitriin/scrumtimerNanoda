@@ -14,7 +14,7 @@
 
 ## 改善アクション
 
-- ADD フレームワーク開発の計画は `docs/plans-add/`、knowhow index は `INDEX.add.md` で管理する（`docs/plans/` と `INDEX.md` はダウンストリームプロジェクト用）
+- ADD フレームワーク開発の計画は `docs/plans-add/`、knowhow index は `INDEX.addf.md` で管理する（`docs/plans/` と `INDEX.md` はダウンストリームプロジェクト用）
 
 ## 完了済み
 
