@@ -43,28 +43,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cp:*)",
-      "Bash(mv:*)",
-      "Bash(rm:*)",
-      "Bash(mkdir:*)",
-      "Bash(ls:*)",
-      "Bash(chmod:*)",
-      "Bash(tail:*)",
-      "Bash(cd:*)",
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git rm:*)",
-      "Bash(git ls-files:*)",
-      "Bash(git branch:*)",
-      "Bash(git worktree:*)",
-      "Bash(git checkout:*)",
-      "Bash(git show:*)",
-      "Bash(git merge:*)",
-      "Bash(git stash:*)",
-      "Bash(bash .claude/tests/run-all.sh:*)"
+      "Read", "Edit", "Write", "Glob", "Grep",
+      "Agent", "Skill", "LSP", "ToolSearch",
+      "TaskCreate", "TaskGet", "TaskList", "TaskOutput", "TaskStop", "TaskUpdate",
+      "TeamCreate", "TeamDelete", "SendMessage",
+      "Bash(cp:*)", "Bash(mkdir:*)", "Bash(ls:*)", "Bash(tail:*)", "Bash(cd:*)",
+      "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+      "Bash(git add:*)", "Bash(git commit:*)", "Bash(git rm:*)",
+      "Bash(git ls-files:*)", "Bash(git branch:*)", "Bash(git worktree:*)",
+      "Bash(git checkout:*)", "Bash(git show:*)", "Bash(git merge:*)", "Bash(git stash:*)",
+      "Bash(bash .claude/tests/run-all.sh:*)",
+      "Bash(uv run --python 3.11 .claude/addfTools/lint:*)"
     ],
     "ask": [
       "Bash(git push:*)",
@@ -90,12 +79,42 @@
 }
 ```
 
+## 権限フォーマットの技術仕様
+
+### 組み込みツールの許可
+
+組み込みツールはツール名だけで許可できる:
+```json
+"allow": ["Read", "Edit", "Write", "Glob", "Grep", "Agent", "Skill", "LSP", "ToolSearch"]
+```
+
+タスク管理・チーム管理系も同様: `TaskCreate`, `TaskUpdate`, `TeamCreate`, `SendMessage` 等。
+
+### Bash コマンドの許可形式
+
+`Bash(prefix:*)` でプレフィックスマッチ:
+- `Bash(git status:*)` → `git status`、`git status --short` 等にマッチ
+- `Bash(bash .claude/tests/:*)` → `.claude/tests/` 以下のスクリプト実行にマッチ
+
+### スキルと権限のスコープ
+
+**スキルは権限をネストしない**。`Skill(addf-lint)` を allow に入れてもスキル起動の許可のみ。スキル内部で呼ばれる `Bash(uv run ...)` 等の各ツール呼び出しは個別に権限チェックされる。
+
+### コマンド許可の限定テクニック
+
+`python3` を全面許可すると権限が強すぎる場合、実行スクリプトをディレクトリに集約して限定できる:
+```json
+"Bash(uv run --python 3.11 .claude/addfTools/lint:*)"
+```
+これにより `.claude/addfTools/lint-*.py` のみ許可され、任意の python3 実行は防げる。
+
 ## 注意点・制約
 
 - `settings.local.json` は `.gitignore` 対象なのでコミットされない
 - 権限は `settings.local.json` > `settings.json` の優先順位で解決される
 - 新しい権限を追加するときは「これはどのパターンか？」を判断してから配置先を決める
 - `ask` に入れるべき破壊的操作（push, reset --hard, clean）はどちらのプロジェクト種別でも共通
+- セッション中にユーザーが deny した権限は、settings.json の allow で上書きできない可能性がある（要検証）
 
 ## 参照
 

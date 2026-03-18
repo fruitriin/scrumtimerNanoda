@@ -23,6 +23,24 @@
   },
   "permissions": {
     "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Agent",
+      "Skill",
+      "LSP",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskOutput",
+      "TaskStop",
+      "TaskUpdate",
+      "TeamCreate",
+      "TeamDelete",
+      "SendMessage",
+      "ToolSearch",
       "Bash(cp:*)",
       "Bash(mkdir:*)",
       "Bash(ls:*)",
@@ -42,7 +60,7 @@
       "Bash(git merge:*)",
       "Bash(git stash:*)",
       "Bash(bash .claude/tests/run-all.sh:*)",
-      "Bash(uv run --python 3.11 .claude/addfTools/:*)"
+      "Bash(uv run --python 3.11 .claude/addfTools/lint:*)"
     ],
     "ask": [
       "Bash(git push:*)",
