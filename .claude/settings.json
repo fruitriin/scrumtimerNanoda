@@ -2,8 +2,33 @@
   "permissions": {
     "allow": [
       "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)",
       "Bash(chmod:*)",
-      "Bash(tail:*)"
+      "Bash(tail:*)",
+      "Bash(cd:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git branch:*)",
+      "Bash(git worktree:*)",
+      "Bash(git checkout:*)",
+      "Bash(git show:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)",
+      "Bash(bash .claude/addToolsSrc/build.sh:*)",
+      "Bash(swiftc:*)"
+    ],
+    "ask": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)"
     ]
   }
 }
