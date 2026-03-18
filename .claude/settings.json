@@ -44,6 +44,9 @@
       "Bash(git show:*)",
       "Bash(git merge:*)",
       "Bash(git stash:*)",
+      "Bash(sed:*)",
+      "Bash(find:*)",
+      "Bash(git rev-parse:*)",
       "Bash(bash .claude/tests/run-all.sh:*)",
       "Bash(bash .claude/addfTools/build.sh:*)",
       "Bash(swiftc:*)"
