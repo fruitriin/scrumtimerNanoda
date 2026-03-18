@@ -30,6 +30,22 @@ AccrateDevDrive由来のスキルは addf- プレフィックスを持ちます
 
 ---
 
+## テスト
+
+ADD フレームワーク自体のテストランナー:
+
+```bash
+bash .claude/tests/run-all.sh
+```
+
+- **フックテスト** (`.claude/tests/hooks/`): ターンカウンター・リセットの自動検証
+- **ツールテスト** (`.claude/tests/tools/`): addfTools バイナリの疎通確認
+- **スキルテスト** (`.claude/tests/skills/`): 自然言語シナリオ（手動実行）
+
+品質ゲートの Stage 1 でプロジェクト固有のビルド・Lint・テストに加えて、`bash .claude/tests/run-all.sh` を実行してください。
+
+---
+
 ## 品質ゲート拡張（オプション）
 
 プロジェクトの規模やセキュリティ要件に応じて、タスク完了時の品質検証を2段階に分割できます。

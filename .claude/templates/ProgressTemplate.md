@@ -21,6 +21,7 @@
 ### タスク完了時 — 品質検証
 
 4. プロジェクトのビルド・Lint・テストコマンドを実行する
+   - ADD フレームワークテスト: `bash .claude/tests/run-all.sh`
    - **失敗した場合 → 実装に差し戻す**。原因分析 → 修正 → 再実行
 5. `addf-code-review-agent` でコードレビューを実施する
 6. `addf-contribution-agent` で ADD フレームワークへのコントリビューション候補を検出する
