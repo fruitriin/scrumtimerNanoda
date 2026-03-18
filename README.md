@@ -1,173 +1,98 @@
-# AutomatonDevDrive Framework
+# ScrumTimer なのだ！
 
-> ADDF is one of Agentic Driven Development Framework
+> デイリースクラムをもっと楽しく、もっとスムーズにするのだ！
 
-[English README](README.en.md)
+[JoSSte/ScrumTimer](https://github.com/JoSSte/ScrumTimer) をフォークし、**WebSocket によるリアルタイムターン交代**と **VoiceVox 音源によるタイムキープ読み上げ**を追加したスクラムタイマーなのだ。
 
-自動人形（Automaton）が開発を自律駆動するフレームワークです。
-プロジェクトをクローンし、いくつかのファイルを差し替えて、計画書（`docs/plans/`）を与えれば、AIエージェントが自律的にタスクを選び、実装し、品質検証まで完遂します。
+## オリジナルとの違い
+
+| 機能 | オリジナル (ScrumTimer) | なのだ！版 |
+|---|---|---|
+| ターン交代 | 操作者のブラウザのみ | **WebSocket で全員のブラウザに同期** |
+| タイムキープ | 画面表示のみ | **VoiceVox 音源で残り時間を読み上げ** |
+| データ管理 | localStorage のみ | localStorage + WebSocket 同期 |
+| 参加者管理 | JSON インポート/エクスポート | JSON + リアルタイム共有 |
 
 ## 特徴
 
-- **ノウハウ蓄積** — 実装で得た知見を `docs/knowhow/` に記録し、以降のタスクで自動参照
-- **自己推進ループ** — `/loop 1h /dev-loop` で TODO からタスクを自律選択・実装
-- **スキルと経験の分離** — スキル定義（`.md`）と経験蓄積（`.exp.md`）を分離し、経験はローカルに蓄積
-- **品質ゲート** — コードレビュー・セキュリティレビュー・コントリビューション検出を自動実行
-- **GUI テスト**（オプション） — macOS 向けスクリーンショット撮影・画像解析によるUIの視覚的検証
+- **誰でもターン交代** — 発表者本人でも、ファシリテーターでも、誰のブラウザからでも「次へ」を押せるのだ。WebSocket で全員の画面が即座に同期される
+- **VoiceVox タイムキープ** — 残り時間を VoiceVox の音声で通知。「残り1分なのだ！」「時間切れなのだ！」のように音声でお知らせ
+- **ローカルファースト** — サーバーが落ちてもローカルで動き続ける。オリジナルのプライバシー哲学を継承
+- **シャッフル** — 毎日ランダムな順番で発表。いつも同じ人が最初にならない
+
+## アーキテクチャ
+
+```
+┌─────────────┐     WebSocket      ┌─────────────┐
+│  ブラウザ A   │◄──────────────────►│             │
+├─────────────┤                    │  WebSocket  │
+│  ブラウザ B   │◄──────────────────►│   サーバー    │
+├─────────────┤                    │             │
+│  ブラウザ C   │◄──────────────────►│             │
+└─────────────┘                    └─────────────┘
+       │
+       ▼
+ VoiceVox Engine (ローカル or リモート)
+```
 
 ## セットアップ
 
-### 1. リポジトリをクローン
+### 前提条件
+
+- Node.js
+- [VoiceVox Engine](https://voicevox.hiroshiba.jp/)（音声読み上げを使う場合）
+
+### インストール
 
 ```bash
-git clone https://github.com/your-org/AutomatonDevDriveFramework.git my-project
-cd my-project
+git clone https://github.com/fruitriin/scrumtimerNanoda.git
+cd scrumtimerNanoda
+npm install
 ```
 
-### 2. プロジェクト固有ファイルを差し替え
+### 開発サーバー起動
 
-| ファイル | 操作 | 説明 |
-|---|---|---|
-| `README.md` | 差し替え | プロジェクト独自の説明に書き換え |
-| `CLAUDE.repo.md` | 作成 | `CLAUDE.repo.example.md` を参考に作成（`.gitignore` 対象、ローカルのみ） |
-| `CLAUDE.local.md` | 作成（任意） | `CLAUDE.local.example.md` を参考に、開発者個人の設定を記載 |
-| `CONTRIBUTING.md` | 差し替え（任意） | 必要に応じてプロジェクトに合わせる |
-
-### 3. 設定の役割
-
-| ファイル | 読み込み方式 | コミット |
-|---|---|---|
-| `CLAUDE.repo.md` | CLAUDE.md から `@` メンションで展開 | しない（`.gitignore`対象） |
-| `CLAUDE.local.md` | Claude Code が自動読み込み | しない（`.gitignore`対象） |
-| `.gitignore` | git 標準 | する |
-| `.claudeignore` | Claude Code 標準 | する |
-
-`.gitignore` 対象でも Claude Code はパス指定でアクセスできるため、「git 非追跡だが Claude には見せたいファイル」（`*.exp.md` 等）は `.gitignore` にだけ書きます。
-
-### 4. 計画を作成して開発を開始
-
-計画ファイルは簡素なメモや箇条書きから作成できます。たとえば:
-
-```markdown
-<!-- こんなメモを plan.md に書いて… -->
-- README のスキルセクションが空
-- 英語ドキュメントがない
-- GUI テストが macOS 専用
+```bash
+npm start
 ```
 
-これを Claude に渡す（`plan.md` とだけ入力する、チャットに箇条書きを貼る、等）だけで、AI が自動的にプロジェクトをレビューし、正式な計画ファイル群に分解して `docs/plans/` と `TODO.md` に投入します。実際に ADDF 自身の開発もこの方法で始まりました。
+### VoiceVox Engine
 
-計画ファイルの書式は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+音声読み上げを利用するには、VoiceVox Engine を別途起動しておく必要があるのだ。
 
-```
-/loop 1h /addf-dev-loop
-```
-
-これで AI エージェントが `TODO.md` → `docs/plans/` → 実装 → 品質検証 → コミットのサイクルを自律的に回します。
-
-## ディレクトリ構成
-
-```
-.
-├── CLAUDE.md                    # ブートシーケンス・開発プロセス定義
-├── CLAUDE.repo.example.md       # CLAUDE.repo.md のテンプレート
-├── CLAUDE.local.example.md      # CLAUDE.local.md のテンプレート
-├── TODO.md                      # タスクバックログ
-├── CONTRIBUTING.md              # コントリビューションガイド
-├── .claude/
-│   ├── Progress.md              # 現在のタスク進捗
-│   ├── Feedback.md              # 問題記録・改善アクション
-│   ├── Progresses/              # 完了タスクのアーカイブ
-│   ├── templates/               # テンプレートファイル
-│   ├── skills/                  # スキル定義
-│   │   └── optional/            # オプショナルスキル
-│   ├── agents/                  # サブエージェント定義
-│   └── addfTools/             # GUI テストツール（macOS/Swift）
-├── docs/
-│   ├── plans/                   # 実装計画ファイル
-│   └── knowhow/                 # 実装知見の蓄積
-└── .gitignore / .claudeignore
+```bash
+# VoiceVox Engine のデフォルトポート: 50021
+# 設定画面から VoiceVox の接続先を変更できる
 ```
 
-## フレームワークスキル
+## 使い方
 
-ADDF が提供するスキル（`/コマンド名` で呼び出し）:
+1. 参加者リストを設定する（JSON インポート or 手動追加）
+2. 「開始」を押すとシャッフルされた順番でタイマーが始まる
+3. **どのブラウザからでも**「次へ」を押せば、全員の画面でターンが切り替わる
+4. 残り時間は VoiceVox が音声で通知してくれる
 
-### ノウハウ管理
+## リファレンス
 
-| スキル | 呼び出し | 説明 |
-|---|---|---|
-| **addf-knowhow** | `/addf-knowhow <トピック>` | 実装知見を `docs/knowhow/` に記録。既存ノウハウとの重複チェック・統合を自動で行う |
-| **addf-knowhow-index** | `/addf-knowhow-index [reindex]` | knowhow インデックスを参照、または `reindex` で再構築 |
-| **addf-knowhow-filter** | `/addf-knowhow-filter <plan-path>` | Plan に関連するノウハウだけをフィルタリングして返す |
+`docs/reference/` にオリジナルの ScrumTimer のソースコードを配置しているのだ。移行・改修の参考にするのだ。
 
-### 開発ループ
+## プライバシー
 
-| スキル | 呼び出し | 説明 |
-|---|---|---|
-| **addf-dev-loop** | `/loop 1h /addf-dev-loop` | TODO.md から未実施タスクを自律選択し、実装・品質検証・コミットまで完遂するループ |
+オリジナルの ScrumTimer の哲学を引き継いでいるのだ。
 
-### 経験管理
+- Cookie は使わない
+- 外部サービスにデータを送信しない
+- 参加者リストは localStorage に保存
+- WebSocket は同じセッションに接続したブラウザ間のみで通信
 
-| スキル | 呼び出し | 説明 |
-|---|---|---|
-| **addf-experience** | `/addf-experience` | スキル経験ファイル（`.exp.md`）のファイルメンション書式を検証 |
+## クレジット
 
-### GUI テスト（オプション）
-
-有効化するには `.claude/addf-Behavior.toml` で `enable = true` に設定してください。macOS のみ対応。
-
-| スキル | 呼び出し | 説明 |
-|---|---|---|
-| **addf-gui-test** | `/addf-gui-test <シナリオ>` | `docs/test-scenarios/` のシナリオに基づき GUI テストを実行 |
-| **addf-annotate-grid** | `/addf-annotate-grid <path>` | PNG 画像にグリッド線と座標ラベルを描画（LLM の座標認識用） |
-| **addf-clip-image** | `/addf-clip-image <path>` | PNG 画像の指定領域を切り出し（注目領域の抽出用） |
-
-## フレームワークエージェント
-
-品質ゲートやブートシーケンスで自動起動されるサブエージェント:
-
-| エージェント | 用途 | 起動タイミング |
-|---|---|---|
-| **addf-knowhow-agent** | Plan に関連するノウハウをフィルタリング | ブートシーケンス（タスク開始時） |
-| **addf-code-review-agent** | コード品質・可読性のレビュー | タスク完了時の品質検証 |
-| **addf-security-review-agent** | セキュリティ脆弱性の検査・報告 | タスク完了時の品質検証（オプション） |
-| **addf-contribution-agent** | フレームワークへのコントリビューション候補の検出 | タスク完了時の品質検証 |
-| **addf-ui-test-agent** | スクリーンショット・画像解析による UI 検証 | タスク完了時の品質検証（オプション） |
-
-## 開発プロセス
-
-```
-計画（Plan）→ 実装 → 品質検証 → コミット
-```
-
-- **計画駆動**: コードではなく計画をレビューする。筋の良い計画は受け入れ、実装は AI が担保する
-- **ブートシーケンス**: セッション開始時に Feedback → TODO → Progress を順に読み込み、現在の状態を把握
-- **品質ゲート**: ビルド・Lint・テスト → コードレビュー → セキュリティレビュー（オプション）
-- **並列実装**: git worktree を活用したサブタスクの並列実行
-
-詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
-
-## 実運用の参考
-
-このリポジトリ自体が ADDF を使って開発されています。フレームワークの実際の運用方法は、このリポジトリの git ログ・Plan・ノウハウ・設定ファイルがそのまま参考になります:
-
-- **`docs/plans-add/`** — ADDF 自身の開発計画。Plan の書き方・粒度の実例
-- **`docs/knowhow/ADDF/`** — 開発で蓄積されたノウハウ。権限設計・スキル設計パターン・分離戦略など
-- **`.claude/settings.json`** — ダウンストリームテンプレートの実例。副作用のない操作のみ allow する設計方針
-- **`.claude/Progresses/`** — 完了タスクのアーカイブ。Progress.md の運用フローの実例
-- **`git log`** — コミットログ規約・品質ゲートの実際の適用結果
+- オリジナル: [JoSSte/ScrumTimer](https://github.com/JoSSte/ScrumTimer) — Angular ベースのデイリースクラムタイマー
+- 音声合成: [VoiceVox](https://voicevox.hiroshiba.jp/) — 無料で使える高品質な音声合成エンジン
+- 開発フレームワーク: [AutomatonDevDrive Framework](https://github.com/fruitriin/AutomatonDevDriveFramework)
 
 ## 名前について
 
-このフレームワークの正式名称は **AutomatonDevDrive Framework**。
+「なのだ！」は、このフォークの個性なのだ。
 
-……なのですが、頭文字を拾うと **ADDF**。
-そして ADDF を展開すると — **A**gentic **D**riven **D**evelopment **F**ramework。
-
-偶然ではありません。
-
-Automaton（自動人形）は、AIエージェントが自律的にタスクを選び、実装し、品質を検証する様子をそのまま指しています。人間が逐一指示しなくても、自動人形は動き続ける。DevDrive はその動力源——開発を駆動するエンジンのような存在です。
-
-表の名前は Automaton、裏の名前は Agentic。どちらも同じものを指している。
-気づいた人はニヤリとしてください。
+オリジナルの ScrumTimer に WebSocket と VoiceVox を足して、みんなで使いやすくしたもの。VoiceVox のキャラクターが「なのだ！」と時間を教えてくれる——そんなイメージなのだ。
