@@ -1,7 +1,7 @@
 # AccrateDevDrive Framework
 
 このリポジトリはAI駆動自動推進フレームワークです。
-プロジェクトをクローンして、いくつかのファイルを差し替えて、プランを与えれば開発することができます。
+プロジェクトをクローンして、いくつかのファイルを差し替えて、プランを与えれば（docs/plans/配下に計画書を作成すれば）開発することができます。
 
 
 # 特徴
@@ -24,5 +24,8 @@ CLAUDE.repo.md はファイルメンションで展開されますし、 CLAUDE.
 
 `.gitignore` は git に追跡させないファイル、`.claudeignore` は Claude Code に見せないファイルを管理します。
 `.gitignore` 対象でも Claude Code はパス指定でアクセスできるため、「git 非追跡だが Claude には見せたいファイル」（`*.exp.md` 等）は `.gitignore` にだけ書きます。
+
+最後に /loop 1h /add-dev-loop  と指示してください。
+
 
 # フレームワークスキル
