@@ -36,13 +36,22 @@
 8. 投入されたタスクのPlanに実装完了状況を反映する
 9. `.claude/Feedback.md` にPlan, TODO, Progress推進エンジンの問題の記録・改善アクションを追記する。反映済みの項目は削除する
 10. `.claude/Feedback.md` にプロジェクト進行上の問題の記録・改善アクションを追記する。反映済みの項目は削除する
-11. `.claude/Progresses/YYYY-MM-DD-プラン名.md` にリネームして移動し、`.claude/templates/ProgressTemplate.md` から新規の Progress.md を作成する
-12. Progress 推進エンジン自体に関するフィードバック・ノウハウがあれば、テンプレート（`.claude/templates/ProgressTemplate.md`）の改善案を `.claude/Feedback.md` に記録する
+11. `.claude/Progresses/YYYY-MM-DD-プラン名.md` にリネームして移動し、`.claude/templates/ProgressTemplate.addf.md` から新規の Progress.md を作成する
+12. Progress 推進エンジン自体に関するフィードバック・ノウハウがあれば、テンプレート（`.claude/templates/ProgressTemplate.addf.md`）の改善案を `.claude/Feedback.md` に記録する
 
 13. コミットする
 
 ---
 
-## タスク
+## タスク: Plan 0006 — スキル品質向上
 
-（現在タスクなし）
+- [x] 1. `addf-experience.md` の充実化 — 明確な手順・Phase構造・エラー対処を追加
+- [x] 2. スキル description の統一性チェック & 修正
+  - [x] 2a. 全スキルの frontmatter を確認・統一（description の文体・粒度・引数説明）
+  - [x] 2b. `user_invocable` の正確性を確認
+- [x] 3. スキル間の参照整合性修正
+  - [x] 3a. `addf-gui-test.md` に前提条件セクション追加（docs/test-scenarios/ 不在時のエラーハンドリング）
+  - [x] 3b. `optional/addf-gui-test.md` を削除して重複解消
+  - [x] 3c. `addf-knowhow-index` を INDEX.addf.md / INDEX.md の自動選択に対応
+- [x] 4. 品質検証（テスト実行 — 全 PASS）
+- [ ] 5. 完了処理
