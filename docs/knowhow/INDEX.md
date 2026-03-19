@@ -2,6 +2,12 @@
 
 > 自動生成。`/addf-knowhow-index reindex` で再生成できる。
 
+## TypeScript・コーディング規約
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [type-vs-interface.md](type-vs-interface.md) | TypeScript で type を優先する方針とその理由。一貫性・Vue Composable 相性・宣言マージ回避 | type, interface, TypeScript, 型宣言, Vue, Composable, ユニオン型, 交差型 |
+
 ## Claude Code 設定・運用
 
 | ファイル | 要約 | キーワード |
