@@ -75,6 +75,12 @@
 └── .gitignore / .claudeignore
 ```
 
+## コーディング規約
+
+- **型宣言は `type` を優先**する。`interface` は `extends` が必要な場合のみ使用
+- Composition API + `<script setup>` を使用
+- composable 関数は `use` プレフィックス
+
 ## ビルド・開発コマンド
 
 ```bash
@@ -157,6 +163,10 @@ npm run type-check   # TypeScript 型チェック
 npm run test         # Vitest でユニットテスト
 npm run test:e2e     # Playwright で E2E テスト（予定）
 ```
+
+- **Vitest**: Vite 組込みのテストランナー。composables とユーティリティのユニットテスト
+- **Playwright MCP**: E2E テスト。実際のブラウザ操作でタイマー・ルーム同期・VoiceVox 連携を検証
+- テストファイルは `src/**/*.test.ts` に配置（コロケーション）
 
 > ⚠ テスト環境は `0001-project-scaffold` で Vitest を導入後に利用可能。
 

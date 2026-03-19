@@ -74,8 +74,30 @@ GitHub Pages からのリクエストも問題なく通る。
 - ホストがタイムキープイベントをブロードキャストし、各クライアントが自分の VoiceVox で再生
 - VoiceVox Engine がないクライアントは音声なしでタイマー表示のみ
 
+### VoiceVox 非対応環境のフォールバック
+
+モバイルブラウザや VoiceVox 未インストール環境では音声通知が使えない。
+以下のフォールバックを用意する:
+
+- **ブラウザ通知 API**: 残り時間をデスクトップ通知で表示（許可が必要）
+- **ビープ音**: Web Audio API で短いビープ音を生成（VoiceVox 不要）
+- **画面フラッシュ**: プログレスバーの色変更 + アニメーションで視覚的に通知
+
+設定で通知方式を選択: VoiceVox / ビープ音 / 通知 / なし
+
+### 設定値の永続化
+
+VoiceVox 関連の設定（engineUrl, speakerId, enabled, 通知方式）は
+`useSettings` composable の localStorage に統合して永続化する。
+`useVoiceVox` composable は `useSettings` から設定値を受け取り、音声合成のみに専念する。
+
+### テスト
+
+- `src/composables/useVoiceVox.test.ts` — VoiceVox Engine API をモック化し、speak/プリフェッチ/キューイングをテスト
+
 ## 影響範囲
 
 - `src/composables/useVoiceVox.ts`（新規）
 - `src/composables/useTimer.ts`（タイムキープイベント発火を追加）
+- `src/composables/useSettings.ts`（VoiceVox 設定キーを追加）
 - `src/components/SettingsView.vue`（VoiceVox 設定 UI 追加）

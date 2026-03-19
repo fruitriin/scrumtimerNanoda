@@ -11,9 +11,10 @@
 
 - **Vite** — ビルドツール
 - **Vue 3** (Composition API + `<script setup>`) — UI フレームワーク
-- **TypeScript** — 型安全
+- **TypeScript** — 型安全（型宣言は `interface` ではなく `type` を優先する）
 - **UnoCSS** — ユーティリティファースト CSS
 - **Vue Router** — ハッシュベースルーティング（GitHub Pages 対応）
+- **Vitest** — ユニットテスト（Vite 組込み）
 
 ### ディレクトリ構成
 
@@ -33,6 +34,8 @@ src/
 │   ├── useTimer.ts
 │   ├── useParticipants.ts
 │   └── useSettings.ts
+├── types/              # 型定義
+│   └── index.ts
 ├── models/
 │   └── Participant.ts
 ├── utils/
@@ -45,9 +48,16 @@ src/
 1. `npm create vite@latest` で Vue + TypeScript プロジェクトを生成
 2. UnoCSS をインストール・設定
 3. Vue Router をハッシュモードで設定
-4. 上記ディレクトリ構成に空コンポーネントを配置
-5. GitHub Pages 用のデプロイ設定（`vite.config.ts` の `base` 設定）
-6. GitHub Actions でのビルド・デプロイワークフロー
+4. Vitest をセットアップ（Vite 組込みのテストランナー）
+5. 上記ディレクトリ構成に空コンポーネントを配置
+6. GitHub Pages 用のデプロイ設定（`vite.config.ts` の `base` 設定）
+7. GitHub Actions でのビルド・デプロイワークフロー
+
+### テスト方針
+
+- **ユニットテスト**: Vitest（Vite 組込み）で composables とユーティリティをテスト
+- **E2E テスト**: Playwright MCP で実際のブラウザ操作を検証（後のフェーズで追加）
+- テストファイルは `src/**/*.test.ts` に配置（コロケーション）
 
 ### ルーティング
 

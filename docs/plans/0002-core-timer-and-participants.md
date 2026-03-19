@@ -10,7 +10,7 @@
 ### Participant モデル
 
 ```typescript
-interface Participant {
+type Participant = {
   id: string          // nanoid で一意識別（WebRTC 同期用にも必要）
   init: string        // イニシャル
   name: string        // 名前
@@ -46,7 +46,9 @@ interface Participant {
 - `currentPercent: ComputedRef<number>` — 個別進捗率
 - `totalPercent: ComputedRef<number>` — 全体進捗率
 - `start()` / `stop()` / `next()` / `reset()`
-- タイマー実装は `setInterval(1000)` （オリジナルは RxJS の timer だが、Vue では不要）
+- タイマー実装は `setInterval` + `Date.now()` ベースの経過時間計算を併用
+  - `setInterval(1000)` で UI 更新をトリガー
+  - 実際の経過時間は `Date.now() - startedAt` で計算（バックグラウンドタブでのスロットリング対策）
 
 ### useSettings Composable
 
@@ -76,7 +78,7 @@ interface Participant {
 
 **SettingsView.vue:**
 - グローバル最大時間の ON/OFF と秒数入力
-- （後のフェーズで VoiceVox 設定、ルーム設定を追加）
+- VoiceVox 設定・ルーム設定は後のフェーズで追加（useSettings に設定キーの予約枠だけ用意）
 
 ### formatTime ユーティリティ
 
@@ -86,9 +88,17 @@ function formatTime(seconds: number): string {
 }
 ```
 
+### テスト
+
+- `src/composables/useTimer.test.ts` — start/stop/next/reset、時間計算、進捗率
+- `src/composables/useParticipants.test.ts` — CRUD、シャッフル、import/export、localStorage 永続化
+- `src/composables/useSettings.test.ts` — 設定の読み書き、localStorage 永続化
+- `src/utils/formatTime.test.ts` — MM:SS 変換（正常系・マイナス値・ゼロ）
+
 ## 影響範囲
 
 - `src/models/Participant.ts`
+- `src/types/index.ts`（Participant 型定義）
 - `src/composables/useTimer.ts`, `useParticipants.ts`, `useSettings.ts`
 - `src/components/TimerView.vue`, `ParticipantList.vue`, `SettingsView.vue`
 - `src/utils/formatTime.ts`

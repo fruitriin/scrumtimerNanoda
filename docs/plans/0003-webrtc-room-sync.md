@@ -61,6 +61,7 @@ type RoomMessage =
   | { type: 'action'; action: TimerAction }        // ゲスト → ホスト: 操作リクエスト
   | { type: 'peer-joined'; count: number }         // ホスト → 全員: 接続数更新
   | { type: 'peer-left'; count: number }           // ホスト → 全員: 接続数更新
+  | { type: 'timekeep'; event: TimekeepEvent }     // ホスト → 全員: タイムキープ通知（0004 で使用）
 
 type TimerAction =
   | { kind: 'start' }
@@ -70,6 +71,12 @@ type TimerAction =
   | { kind: 'markAbsent'; participantId: string }
   | { kind: 'markPresent'; participantId: string }
   | { kind: 'shuffle' }
+
+type TimekeepEvent =
+  | { kind: 'remaining'; seconds: number }         // 残り時間通知
+  | { kind: 'timeup' }                             // 時間切れ
+  | { kind: 'nextPerson'; name: string }           // 次の人
+  | { kind: 'allDone' }                            // 全員完了
 ```
 
 ### ルーティング追加
@@ -91,9 +98,20 @@ type TimerAction =
 - ゲストはローカルの最後の状態でスタンドアロンモードに戻る
 - 「ルームを再作成」ボタンを表示し、残りのメンバーが新ルームを作れるようにする
 
+### エラーハンドリング
+
+- **PeerJS Cloud 不調**: 接続タイムアウト後、「シグナリングサーバーに接続できません」を表示。ローカルモードで継続利用可能
+- **ネットワーク断**: 自動再接続を試行（3回、指数バックオフ）。復旧しなければスタンドアロンモードに戻る
+- **ホスト切断**: 上記フォールバック参照
+
+### テスト
+
+- `src/composables/useRoom.test.ts` — PeerJS をモック化し、ルーム作成・参加・メッセージ送受信・切断をテスト
+
 ## 影響範囲
 
 - `src/composables/useRoom.ts`（新規）
+- `src/types/room.ts`（新規: RoomMessage, TimerAction, TimekeepEvent 型定義）
 - `src/router/index.ts`（ルーム用ルート追加）
 - `src/components/TimerView.vue`（ルーム UI 追加）
 - `src/components/RoomPanel.vue`（新規: ルーム作成・参加 UI）
