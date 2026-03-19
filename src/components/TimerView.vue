@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
+import { useRoute } from "vue-router";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
+import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
+import RoomPanel from "./RoomPanel.vue";
 
 const {
   isRunning,
@@ -30,6 +33,16 @@ const {
   sort,
 } = useParticipants();
 const { settings } = useSettings();
+const { roomId, joinRoom } = useRoom();
+const route = useRoute();
+
+// ルーム URL から参加
+onMounted(() => {
+  const id = route.params.roomId;
+  if (typeof id === "string" && id && !roomId.value) {
+    joinRoom(id);
+  }
+});
 
 const hasParticipants = computed(
   () => participants.value.length > 0 || doneParticipants.value.length > 0,
@@ -53,6 +66,9 @@ function progressColor(percent: number): string {
 
 <template>
   <div class="p-4 max-w-2xl mx-auto">
+    <!-- ルームパネル -->
+    <RoomPanel />
+
     <!-- 参加者がいない場合 -->
     <div v-if="!hasParticipants" class="text-center py-12">
       <h2 class="text-2xl font-bold mb-4">参加者がいないのだ！</h2>

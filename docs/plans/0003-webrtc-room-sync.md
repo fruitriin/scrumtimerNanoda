@@ -112,7 +112,22 @@ type TimekeepEvent =
 
 - `src/composables/useRoom.ts`（新規）
 - `src/types/room.ts`（新規: RoomMessage, TimerAction, TimekeepEvent 型定義）
-- `src/router/index.ts`（ルーム用ルート追加）
+- `src/router/index.ts`（ルーム用ルート追加 — 0001 で対応済み）
 - `src/components/TimerView.vue`（ルーム UI 追加）
 - `src/components/RoomPanel.vue`（新規: ルーム作成・参加 UI）
-- `package.json`（peerjs 追加）
+- `package.json`（peerjs, nanoid 追加）
+
+## 実装状況: 完了 (2026-03-19)
+
+### 実装内容
+- PeerJS による WebRTC P2P 通信（スター型トポロジー）
+- useRoom composable: createRoom/joinRoom/leaveRoom/sendAction
+- RoomPanel.vue: ルーム作成・参加・退出 UI、接続状態インジケーター
+- TimerView.vue に RoomPanel 統合、ルート params からの自動参加
+- 型ガード `isRoomMessage()` で受信データを安全に検証
+- 指数バックオフ再接続（3回）、ホスト切断時ローカルモードフォールバック
+- テスト 31 ケース全パス（useRoom 6 + 既存 25）
+
+### レビュー対応
+- Critical: watch 重複登録防止（watchStopHandle）、型ガード追加
+- Warning: applyState で isRunning 反映、unavailable-id 再帰上限、handleJoin で直接 joinRoom 呼び出し
