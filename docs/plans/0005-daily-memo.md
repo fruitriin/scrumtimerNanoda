@@ -111,16 +111,19 @@ type PublicMemoPayload = {
 ### localStorage 構造
 
 ```typescript
-// キー: 'dailyMemo'
-type StoredMemo = {
-  publicContent: string
-  privateContent: string
-  date: string           // 'YYYY-MM-DD' — 日付が変わったら自動クリア
+// キー: 'dailyMemos'
+type StoredMemos = {
+  [date: string]: {        // 'YYYY-MM-DD' をキーに日別保存
+    publicContent: string
+    privateContent: string
+  }
 }
 ```
 
-日付が変わったらメモを自動クリアする（前日のメモは残さない）。
-ただし、手動で「昨日のメモを見る」オプションは用意する。
+- メモは**日付ごとに蓄積**し、自動削除しない（過去の振り返りに使える）
+- 今日のメモは新規作成、昨日以前のメモは閲覧・コピー可能
+- UI で日付を切り替えて過去メモを参照できる
+- 容量が気になる場合はユーザーが手動で古いメモを削除する導線を用意
 
 ### テスト
 
