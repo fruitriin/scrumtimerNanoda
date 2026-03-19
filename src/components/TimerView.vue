@@ -89,20 +89,22 @@ function progressColor(percent: number): string {
 
       <!-- 現在の発表者 -->
       <section class="mb-6">
-        <h4 class="text-sm font-semibold text-gray-500 mb-1">
-          {{ currentParticipant ? currentParticipant.name : "—" }}
-        </h4>
-        <div class="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
+        <div class="flex items-center justify-between mb-1">
+          <h4 class="text-sm font-bold text-gray-700">
+            {{ currentParticipant ? currentParticipant.name : "—" }}
+          </h4>
+          <span class="text-lg font-mono font-bold" :class="[currentPercent >= 95 ? 'text-red-500' : currentPercent > 75 ? 'text-yellow-600' : 'text-emerald-600']">
+            {{ formatTime(currentRemainingTime) }}
+          </span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-10 overflow-hidden">
           <div
-            class="h-full rounded-full transition-all duration-300 flex items-center justify-center text-white text-sm font-bold"
+            class="h-full rounded-full transition-all duration-300 flex items-center justify-center text-white font-bold"
             :class="[progressColor(currentPercent), { 'animate-pulse': currentPercent >= 95 }]"
             :style="{ width: Math.min(100, currentPercent) + '%' }"
           >
-            <span v-if="currentPercent > 10">{{ formatTime(currentRemainingTime) }}</span>
+            <span v-if="currentPercent > 15" class="text-sm">{{ currentPercent }}%</span>
           </div>
-        </div>
-        <div class="text-center text-4xl font-mono mt-2">
-          {{ formatTime(currentRemainingTime) }}
         </div>
       </section>
 
