@@ -12,7 +12,7 @@
 
 | ファイル | 要約 | キーワード |
 |---|---|---|
-| [vite-plus-setup.md](vite-plus-setup.md) | Vite+ (vp) のセットアップ方法、oxlint の baseUrl 非推奨制約、vp check スコープ限定、composables シングルトンパターン | Vite+, vp, oxlint, baseUrl, paths, パスエイリアス, vp check, composable, シングルトン, CI, pnpm |
+| [vite-plus-setup.md](vite-plus-setup.md) | Vite+ の統合ツールチェーン思想（ESLint/Prettier/Vitest 個別設定不要、vite.config.ts に一元化）、Oxlint/Oxfmt/tsgolint の役割、baseUrl 非推奨制約、composables シングルトンパターン | Vite+, vp, Oxlint, Oxfmt, tsgolint, ESLint不要, Prettier不要, vite.config.ts一元化, vp check, composable, シングルトン, CI |
 
 ## Claude Code 設定・運用
 
