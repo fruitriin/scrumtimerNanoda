@@ -117,7 +117,7 @@ function progressColor(percent: number): string {
             :disabled="participants.length <= 2"
             @click="shuffle(isRunning)"
           >
-            🔀
+            🔀 シャッフル
           </button>
         </div>
 
