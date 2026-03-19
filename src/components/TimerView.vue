@@ -110,18 +110,8 @@ function progressColor(percent: number): string {
 
       <!-- 参加者リスト -->
       <section class="mb-4">
-        <div class="flex items-center gap-2 mb-2">
-          <h4 class="text-sm font-semibold text-gray-500">参加者</h4>
-          <button
-            class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-40"
-            :disabled="participants.length <= 2"
-            @click="shuffle(isRunning)"
-          >
-            🔀 シャッフル
-          </button>
-        </div>
-
-        <div class="flex flex-wrap gap-1.5 justify-start">
+        <div class="flex flex-wrap items-center gap-1.5 justify-start">
+          <span class="text-sm font-semibold text-gray-500 mr-1">参加者</span>
           <!-- 完了（左に表示） -->
           <span
             v-for="dp in doneParticipants"
@@ -202,6 +192,13 @@ function progressColor(percent: number): string {
         </button>
         <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" @click="reset">
           ↻ リセット
+        </button>
+        <button
+          class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-40"
+          :disabled="participants.length <= 2"
+          @click="shuffle(isRunning)"
+        >
+          🔀 シャッフル
         </button>
       </section>
 
