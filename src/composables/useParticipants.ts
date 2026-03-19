@@ -4,38 +4,65 @@ import { createParticipant } from "../models/Participant";
 
 const STORAGE_KEY = "scrumtimer-participants";
 
-function loadParticipants(): Participant[] {
+type StoredState = {
+  participants: Participant[];
+  done: Participant[];
+  absent: Participant[];
+};
+
+function sanitizeParticipant(p: Partial<Participant>): Participant {
+  return {
+    id: p.id ?? crypto.randomUUID(),
+    name: p.name ?? "",
+    time: typeof p.time === "number" ? p.time : 0,
+  };
+}
+
+function loadState(): StoredState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
+      // 新形式: { participants, done, absent }
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return {
+          participants: Array.isArray(parsed.participants)
+            ? parsed.participants.map(sanitizeParticipant)
+            : [],
+          done: Array.isArray(parsed.done) ? parsed.done.map(sanitizeParticipant) : [],
+          absent: Array.isArray(parsed.absent) ? parsed.absent.map(sanitizeParticipant) : [],
+        };
+      }
+      // 旧形式（配列のみ）: 全員を participants に復元
       if (Array.isArray(parsed)) {
-        return parsed.map((p: Partial<Participant>) => ({
-          id: p.id ?? crypto.randomUUID(),
-          name: p.name ?? "",
-          time: typeof p.time === "number" ? p.time : 0,
-        }));
+        return { participants: parsed.map(sanitizeParticipant), done: [], absent: [] };
       }
     }
   } catch {
     // localStorage が壊れていても安全にフォールバック
   }
-  return [];
+  return { participants: [], done: [], absent: [] };
 }
 
-/** モジュールスコープでシングルトン化 */
-const participants = ref<Participant[]>(loadParticipants());
-const doneParticipants = ref<Participant[]>([]);
-const absentParticipants = ref<Participant[]>([]);
+const initialState = loadState();
 
-// localStorage に自動永続化（待機リストのみ保存）
-watch(
-  participants,
-  (val) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
-  },
-  { deep: true },
-);
+/** モジュールスコープでシングルトン化 */
+const participants = ref<Participant[]>(initialState.participants);
+const doneParticipants = ref<Participant[]>(initialState.done);
+const absentParticipants = ref<Participant[]>(initialState.absent);
+
+/** 全リストをまとめて localStorage に保存 */
+function saveAll() {
+  const state: StoredState = {
+    participants: participants.value,
+    done: doneParticipants.value,
+    absent: absentParticipants.value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// localStorage に自動永続化（全リストを監視）
+watch([participants, doneParticipants, absentParticipants], saveAll, { deep: true });
 
 /**
  * 参加者管理 composable
