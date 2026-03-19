@@ -42,7 +42,7 @@ watch(
  */
 export function useParticipants() {
   function add(name: string) {
-    participants.value.unshift(createParticipant(name));
+    participants.value.push(createParticipant(name));
   }
 
   function remove(id: string) {

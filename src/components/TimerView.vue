@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { computed } from "vue";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
-import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
-import RoomPanel from "./RoomPanel.vue";
 
 const {
   isRunning,
@@ -26,16 +23,6 @@ const {
 const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
   useParticipants();
 const { settings } = useSettings();
-const { roomId, joinRoom } = useRoom();
-const route = useRoute();
-
-// ルーム URL から参加
-onMounted(() => {
-  const id = route.params.roomId;
-  if (typeof id === "string" && id && !roomId.value) {
-    joinRoom(id);
-  }
-});
 
 const hasParticipants = computed(
   () => participants.value.length > 0 || doneParticipants.value.length > 0,
@@ -59,9 +46,6 @@ function progressColor(percent: number): string {
 
 <template>
   <div class="p-4 max-w-2xl mx-auto">
-    <!-- ルームパネル -->
-    <RoomPanel />
-
     <!-- 参加者がいない場合 -->
     <div v-if="!hasParticipants" class="text-center py-12">
       <h2 class="text-2xl font-bold mb-4">参加者がいないのだ！</h2>
@@ -136,6 +120,18 @@ function progressColor(percent: number): string {
         </div>
 
         <div class="flex flex-wrap gap-1.5 justify-start">
+          <!-- 完了（左に表示） -->
+          <span
+            v-for="dp in doneParticipants"
+            :key="dp.id"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-200 text-gray-500"
+          >
+            ✓ {{ dp.name }}
+            <span class="text-xs" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
+              {{ formatTime(dp.time) }}
+            </span>
+          </span>
+
           <!-- 待機中 -->
           <span
             v-for="(p, i) in participants"
@@ -156,18 +152,7 @@ function progressColor(percent: number): string {
               ⊖
             </button>
             {{ p.name }}
-          </span>
-
-          <!-- 完了 -->
-          <span
-            v-for="dp in doneParticipants"
-            :key="dp.id"
-            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-200 text-gray-500"
-          >
-            ✓ {{ dp.name }}
-            <span class="text-xs" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
-              {{ formatTime(dp.time) }}
-            </span>
+            <span v-if="i > 0" class="text-xs text-gray-400">-</span>
           </span>
 
           <!-- 不在 -->

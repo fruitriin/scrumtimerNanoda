@@ -22,10 +22,11 @@ describe("useParticipants", () => {
     const { participants, add, remove } = await loadUseParticipants();
     add("ずんだもん");
     add("つむぎ");
+    // push なので [ずんだもん, つむぎ] の順。ずんだもんを削除
     const id = participants.value[0].id;
     remove(id);
     expect(participants.value).toHaveLength(1);
-    expect(participants.value[0].name).toBe("ずんだもん");
+    expect(participants.value[0].name).toBe("つむぎ");
   });
 
   it("シャッフルしても要素数は変わらないのだ", async () => {
@@ -39,10 +40,10 @@ describe("useParticipants", () => {
 
   it("ドラッグ＆ドロップで並び替えできるのだ", async () => {
     const { participants, add, moveParticipant } = await loadUseParticipants();
-    add("Charlie");
-    add("Bob");
     add("Alice");
-    // Alice(0) → 2番目に移動
+    add("Bob");
+    add("Charlie");
+    // push なので [Alice, Bob, Charlie]。Alice(0) → 2番目に移動
     moveParticipant(0, 2);
     expect(participants.value.map((p) => p.name)).toEqual(["Bob", "Charlie", "Alice"]);
   });
