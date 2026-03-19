@@ -89,7 +89,7 @@
 4. **Stage 1: ビルド検証**（ゲートキーパー）を通過するまでループ
 
 ```bash
-npm run build && npm run lint && npm run test
+vp build && vp check src/ && vp test run
 ```
 
 - Stage 1 が失敗 → 原因分析 → 修正 → 再実行
@@ -113,6 +113,18 @@ Stage 1 通過後、以下のエージェントを**並列**で起動する:
 - Medium → 原則修正。先送りする場合は独立計画を起こす
 - Low/Info → Plan に記録し、必要に応じて独立計画で対応
 
+### デプロイ（完了処理の一部）
+
+Stage 2 通過後、コミット・push と合わせて GitHub Pages にデプロイする:
+
+```bash
+pnpm run deploy      # vp build → gh-pages ブランチに push
+```
+
+- デプロイ先: https://fruitriin.github.io/scrumtimerNanoda/
+- 方式: Deploy from Branch（gh-pages ブランチ、/ ルート）
+- `vp build` → `dist/` を orphan `gh-pages` ブランチに force push
+
 ---
 
 ## コーディング規約
@@ -124,15 +136,14 @@ Stage 1 通過後、以下のエージェントを**並列**で起動する:
 ## ビルド・開発コマンド
 
 ```bash
-npm install          # 依存関係インストール
-npm run dev          # 開発サーバー起動（Vite）
-npm run build        # プロダクションビルド
-npm run preview      # ビルド結果のプレビュー
-npm run lint         # Lint 実行
-npm run type-check   # TypeScript 型チェック
+vp install           # 依存関係インストール（pnpm に委譲）
+vp dev               # 開発サーバー起動
+vp build             # プロダクションビルド
+vp preview           # ビルド結果のプレビュー
+vp check src/        # format + lint + type check 一括
+vp test run          # Vitest ユニットテスト
+pnpm run deploy      # ビルド → gh-pages ブランチに push（GitHub Pages デプロイ）
 ```
-
-> ⚠ 上記コマンドは `0001-project-scaffold` 完了後に利用可能になる。
 
 ## ルーティング
 
@@ -200,14 +211,12 @@ npm run type-check   # TypeScript 型チェック
 ## テスト
 
 ```bash
-npm run test         # Vitest でユニットテスト
-npm run test:e2e     # Playwright で E2E テスト（予定）
+vp test run          # Vitest でユニットテスト
+vp test              # ウォッチモードでテスト
 ```
 
-- **Vitest**: Vite 組込みのテストランナー。composables とユーティリティのユニットテスト
-- **Playwright MCP**: E2E テスト。実際のブラウザ操作でタイマー・ルーム同期・VoiceVox 連携を検証
+- **Vitest**: Vite+ 組込みのテストランナー。composables とユーティリティのユニットテスト
+- **Playwright MCP**: E2E テスト。実際のブラウザ操作でタイマー・ルーム同期・VoiceVox 連携を検証（予定）
 - テストファイルは `src/**/*.test.ts` に配置（コロケーション）
 
-> ⚠ テスト環境は `0001-project-scaffold` で Vitest を導入後に利用可能。
-
-品質ゲートの Stage 1 で `npm run build && npm run lint && npm run test` を実行してください。
+品質ゲートの Stage 1 で `vp build && vp check src/ && vp test run` を実行する。
