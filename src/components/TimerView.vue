@@ -122,6 +122,72 @@ function progressColor(percent: number): string {
         </div>
       </section>
 
+      <!-- 参加者リスト -->
+      <section class="mb-4">
+        <div class="flex items-center gap-2 mb-2">
+          <h4 class="text-sm font-semibold text-gray-500">参加者</h4>
+          <button
+            class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-40"
+            :disabled="participants.length <= 2"
+            @click="shuffle"
+          >
+            🔀
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 justify-start">
+          <!-- 待機中 -->
+          <span
+            v-for="(p, i) in participants"
+            :key="p.id"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm"
+            :class="{
+              'bg-emerald-200 font-bold text-emerald-900': i === 0,
+              'bg-blue-100 text-blue-800': i === 1,
+              'bg-gray-100 text-gray-700': i > 1,
+            }"
+          >
+            <button
+              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs"
+              :disabled="participants.length <= 2 || (i === 0 && isRunning)"
+              title="不在にする"
+              @click="markAbsent(p.id)"
+            >
+              ⊖
+            </button>
+            {{ p.name }}
+          </span>
+
+          <!-- 完了 -->
+          <span
+            v-for="dp in doneParticipants"
+            :key="dp.id"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-200 text-gray-500"
+          >
+            ✓ {{ dp.name }}
+            <span class="text-xs" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
+              {{ formatTime(dp.time) }}
+            </span>
+          </span>
+
+          <!-- 不在 -->
+          <span
+            v-for="ap in absentParticipants"
+            :key="ap.id"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-red-50 text-gray-400"
+          >
+            <button
+              class="text-gray-400 hover:text-emerald-500 text-xs"
+              title="出席に戻す"
+              @click="markPresent(ap.id)"
+            >
+              ⊕
+            </button>
+            {{ ap.name }}
+          </span>
+        </div>
+      </section>
+
       <!-- ボタン群 -->
       <section class="flex gap-2 justify-center mb-6">
         <button
@@ -159,73 +225,6 @@ function progressColor(percent: number): string {
           <li>今日やることは？</li>
           <li>困っていることは？</li>
         </ol>
-      </section>
-
-      <!-- 参加者リスト -->
-      <section>
-        <div class="flex items-center gap-2 mb-2">
-          <h4 class="font-semibold">参加者</h4>
-          <button
-            class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-40"
-            :disabled="participants.length <= 2"
-            @click="shuffle"
-          >
-            🔀 シャッフル
-          </button>
-        </div>
-
-        <ul class="space-y-1">
-          <!-- 待機中 -->
-          <li
-            v-for="(p, i) in participants"
-            :key="p.id"
-            class="flex items-center gap-2 px-3 py-2 rounded"
-            :class="{
-              'bg-emerald-100 font-bold': i === 0,
-              'bg-blue-50': i === 1,
-              'bg-white': i > 1,
-            }"
-          >
-            <button
-              class="text-gray-400 hover:text-red-500 disabled:opacity-30"
-              :disabled="participants.length <= 2 || (i === 0 && isRunning)"
-              title="不在にする"
-              @click="markAbsent(p.id)"
-            >
-              ⊖
-            </button>
-            <span>{{ p.name }}</span>
-          </li>
-
-          <!-- 完了 -->
-          <li
-            v-for="dp in doneParticipants"
-            :key="dp.id"
-            class="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-500 rounded"
-          >
-            <span>✓</span>
-            <span>{{ dp.name }}</span>
-            <span class="ml-auto" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
-              {{ formatTime(dp.time) }}
-            </span>
-          </li>
-
-          <!-- 不在 -->
-          <li
-            v-for="ap in absentParticipants"
-            :key="ap.id"
-            class="flex items-center gap-2 px-3 py-2 bg-red-50 text-gray-400 rounded"
-          >
-            <button
-              class="text-gray-400 hover:text-emerald-500"
-              title="出席に戻す"
-              @click="markPresent(ap.id)"
-            >
-              ⊕
-            </button>
-            <span>{{ ap.name }}</span>
-          </li>
-        </ul>
       </section>
     </div>
   </div>
