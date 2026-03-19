@@ -9,7 +9,7 @@
 
 | 優先度 | Phase | 計画ファイル | 状態 |
 |---|---|---|---|
-| 1 | Phase 1 | `docs/plans/0001-project-scaffold.md` | 未着手 |
+| ~~1~~ | ~~Phase 1~~ | ~~`docs/plans/0001-project-scaffold.md`~~ | ~~完了~~ |
 | 2 | Phase 1 | `docs/plans/0002-core-timer-and-participants.md` | 未着手 |
 | 3 | Phase 2 | `docs/plans/0003-webrtc-room-sync.md` | 未着手 |
 | 4 | Phase 2 | `docs/plans/0004-voicevox-timekeep.md` | 未着手 |
@@ -25,3 +25,4 @@
 
 | Phase | 計画ファイル | 状態 |
 |---|---|---|
+| Phase 1 | `docs/plans/0001-project-scaffold.md` | 完了 (2026-03-19) |

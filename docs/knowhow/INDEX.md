@@ -8,6 +8,12 @@
 |---|---|---|
 | [type-vs-interface.md](type-vs-interface.md) | TypeScript で type を優先する方針とその理由。一貫性・Vue Composable 相性・宣言マージ回避 | type, interface, TypeScript, 型宣言, Vue, Composable, ユニオン型, 交差型 |
 
+## ビルドツール・開発環境
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [vite-plus-setup.md](vite-plus-setup.md) | Vite+ (vp) のセットアップ方法、oxlint の baseUrl 非推奨制約、vp check スコープ限定、composables シングルトンパターン | Vite+, vp, oxlint, baseUrl, paths, パスエイリアス, vp check, composable, シングルトン, CI, pnpm |
+
 ## Claude Code 設定・運用
 
 | ファイル | 要約 | キーワード |

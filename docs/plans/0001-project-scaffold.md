@@ -79,3 +79,24 @@ src/
 - プロジェクトルート（`package.json`, `vite.config.ts`, `tsconfig.json` 等）
 - `src/` 以下すべて（新規作成）
 - `.github/workflows/`（デプロイ設定）
+
+## 実装状況: 完了 (2026-03-19)
+
+### 実装内容
+- **Vite+** (vp) ベースでプロジェクト生成（`vp create vite -- --template vue-ts`）
+- UnoCSS + Vue Router（ハッシュモード）+ Vitest セットアップ
+- 全コンポーネント・composables・types・models・utils を配置
+- `/room/:roomId` ルートも追加（CLAUDE.repo.md 仕様に準拠）
+- GitHub Actions デプロイワークフロー（pnpm + setup-node 方式）
+- formatTime ユニットテスト 7 ケース全パス
+
+### Plan からの変更点
+- ビルドツールを Vite → **Vite+** に変更（オーナーリクエスト）
+- `npm create vite` の代わりに `vp create` を使用
+- `@/` パスエイリアスは非採用（oxlint の baseUrl 非推奨により相対パスに統一）
+- composables の ref をモジュールスコープに持ち上げ（シングルトン化）
+
+### レビュー対応
+- Critical: CI の `curl | bash` → pnpm/action-setup に修正
+- Warning: useSettings/useParticipants のシングルトン化、env.d.ts 型修正、/room/:roomId 追加
+- Suggestion: NavBar の exact-active-class 採用、favicon.svg 追加

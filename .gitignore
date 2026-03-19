@@ -1,10 +1,33 @@
 # 依存・ビルド成果物
 node_modules
+dist
+dist-ssr
 
-# スキル経験ファイル（ローカル蓄積、共有しない）
+# ログ
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ローカル設定
+*.local
+
+# エディタ
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ADDF フレームワーク — ローカル専用
 .claude/commands/*.exp.md
-
-# フック状態ファイル（セッションローカル）
 .claude/.turn-count
 CLAUDE.local.md
 CLAUDE.repo.md

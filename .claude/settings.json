@@ -76,12 +76,28 @@
       "Bash(gh pr checks *)",
       "Bash(gh pr checkout *)",
       "Bash(bash .claude/tests/run-all.sh *)",
-      "Bash(uv run --python 3.11 .claude/addfTools/lint *)"
+      "Bash(uv run --python 3.11 .claude/addfTools/lint *)",
+      "Bash(source *)",
+      "Bash(cat *)",
+      "Bash(npx vue-tsc *)",
+      "Bash(vp build *)",
+      "Bash(vp check *)",
+      "Bash(vp test *)",
+      "Bash(vp dev *)",
+      "Bash(vp preview *)",
+      "Bash(vp lint *)",
+      "Bash(vp fmt *)",
+      "Bash(vp run *)",
+      "Bash(vp exec *)"
     ],
     "ask": [
       "Bash(git push *)",
       "Bash(git reset --hard *)",
-      "Bash(git clean *)"
+      "Bash(git clean *)",
+      "Bash(vp install *)",
+      "Bash(vp add *)",
+      "Bash(vp remove *)",
+      "Bash(vp create *)"
     ]
   }
 }
