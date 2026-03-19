@@ -3,7 +3,7 @@
 `docs/plans/` の完了状態・優先度をトラックする。
 `docs/plans/` と TODO が一致しなければ TODO を編集する。
 
-## 現在のフェーズ: Phase 1 — プロジェクト基盤構築
+## 現在のフェーズ: Phase 2 — 機能拡充
 
 ## バックログ
 
@@ -31,3 +31,4 @@
 | Phase 1 | `docs/plans/0002-core-timer-and-participants.md` | 完了 (2026-03-19) |
 | Phase 2 | `docs/plans/0003-webrtc-room-sync.md` | 完了 (2026-03-19) |
 | インフラ | `docs/plans/0006-github-pages-deploy.md` | 完了 (2026-03-19) |
+| UIUX | `docs/plans/0007-uiux-feedback.md` | 完了 (2026-03-19) |

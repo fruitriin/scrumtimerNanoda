@@ -11,6 +11,9 @@
 ## 問題の記録
 
 - このリポジトリ自体がADDフレームワーク本体のため、`addf-contribution-agent` の検出結果（アップストリームコントリビューション候補）はそのまま自身に適用済み。フレームワーク本体での `addf-contribution-agent` の有用性は限定的
+- `doneParticipants` を localStorage に保存していなかったため、タイマー中のリロードで参加者が消失するバグがあった。全リスト（participants, done, absent）をまとめて保存するよう修正済み
+- `deploy` スクリプトで `$OLDPWD` が `cd` で上書きされる問題があった。`$PWD` を事前保存して回避
+- GitHub Pages の Deploy from Branch は `/docs` か `/` しか選べない。`docs/` には既存ファイルがあるため `gh-pages` orphan ブランチ方式を採用
 - `vp check` はプロジェクト全体を対象にする。`docs/` 等の非ソースファイルを含むため、`lint` スクリプトは `vp check src/` でスコープを限定した
 - oxlint (Vite+組込み) は `baseUrl` + `paths` を非推奨としており、`@/` パスエイリアスが使えない。相対パスに統一した
 - `npm create vite` は `vp create vite -- --template vue-ts` で代替可能だが、既存ディレクトリに直接生成できないため `/tmp` に生成して rsync する回り道が必要だった
