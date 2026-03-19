@@ -153,7 +153,7 @@ function progressColor(percent: number): string {
             </button>
             {{ p.name }}
             <span v-if="i === 0 && isRunning" class="text-xs font-mono w-10 text-right">{{ formatTime(currentElapsed) }}</span>
-            <span v-else-if="i > 0" class="text-xs text-gray-400 font-mono w-10 text-right">-</span>
+            <span v-else class="text-xs text-gray-400 font-mono w-10 text-right">-</span>
           </span>
 
           <!-- 不在 -->
