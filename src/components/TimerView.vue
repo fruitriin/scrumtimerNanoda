@@ -127,7 +127,7 @@ function progressColor(percent: number): string {
             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-200 text-gray-500"
           >
             ✓ {{ dp.name }}
-            <span class="text-xs" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
+            <span class="text-xs font-mono w-10 text-right" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
               {{ formatTime(dp.time) }}
             </span>
           </span>
@@ -152,8 +152,8 @@ function progressColor(percent: number): string {
               ⊖
             </button>
             {{ p.name }}
-            <span v-if="i === 0 && isRunning" class="text-xs">{{ formatTime(currentElapsed) }}</span>
-            <span v-else-if="i > 0" class="text-xs text-gray-400">-</span>
+            <span v-if="i === 0 && isRunning" class="text-xs font-mono w-10 text-right">{{ formatTime(currentElapsed) }}</span>
+            <span v-else-if="i > 0" class="text-xs text-gray-400 font-mono w-10 text-right">-</span>
           </span>
 
           <!-- 不在 -->
