@@ -10,7 +10,7 @@
     "lint": "vp check src/",
     "type-check": "vue-tsc --noEmit",
     "test": "vp test run",
-    "deploy": "vp build && cd /tmp && rm -rf gh-pages-deploy && mkdir gh-pages-deploy && cd gh-pages-deploy && git init && git checkout --orphan gh-pages && cp -r \"$OLDPWD/dist/\"* . && git add -A && git commit -m 'deploy' && git remote add origin git@github.com:fruitriin/scrumtimerNanoda.git && git push origin gh-pages --force"
+    "deploy": "vp build && DIST_DIR=\"$PWD/dist\" && cd /tmp && rm -rf gh-pages-deploy && mkdir gh-pages-deploy && cd gh-pages-deploy && git init && git checkout --orphan gh-pages && cp -r \"$DIST_DIR/\"* . && git add -A && git commit -m 'deploy' && git remote add origin git@github.com:fruitriin/scrumtimerNanoda.git && git push origin gh-pages --force"
   },
   "dependencies": {
     "nanoid": "^5.1.7",
