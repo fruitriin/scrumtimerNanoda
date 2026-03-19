@@ -13,6 +13,7 @@
 | 2 | Phase 1 | `docs/plans/0002-core-timer-and-participants.md` | 未着手 |
 | 3 | Phase 2 | `docs/plans/0003-webrtc-room-sync.md` | 未着手 |
 | 4 | Phase 2 | `docs/plans/0004-voicevox-timekeep.md` | 未着手 |
+| 5 | Phase 2 | `docs/plans/0005-daily-memo.md` | 未着手 |
 
 オーナーリクエスト:
 タスクが無くなったら以下に取り組んでください
