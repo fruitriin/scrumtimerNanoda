@@ -146,6 +146,35 @@ export function useSettings() {
 }
 ```
 
+### シングルトン composable のテストパターン
+
+モジュールスコープのシングルトン状態をテスト間でリセットするには、
+`vi.resetModules()` + 動的 `import()` を使う:
+
+```typescript
+describe("useSettings", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.resetModules(); // モジュールキャッシュをクリア
+  });
+
+  async function loadUseSettings() {
+    // 動的 import でモジュールを再読み込み → ref が再初期化される
+    const mod = await import("./useSettings");
+    return mod.useSettings();
+  }
+
+  it("デフォルト設定が読み込まれる", async () => {
+    const { settings } = await loadUseSettings();
+    expect(settings.value.globalMaxTime).toBe(900);
+  });
+});
+```
+
+**注意**: シングルトン化した composable で `onUnmounted` を使うと、
+Vue コンポーネントコンテキスト外（テスト等）で警告が出る。
+クリーンアップは呼び出し元コンポーネントの責務にする。
+
 ## 注意点・制約
 
 - Vite+ はアルファ段階（2026-03 時点）。peer dependency 警告が出るが動作には影響なし

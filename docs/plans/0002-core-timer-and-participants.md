@@ -102,3 +102,19 @@ function formatTime(seconds: number): string {
 - `src/composables/useTimer.ts`, `useParticipants.ts`, `useSettings.ts`
 - `src/components/TimerView.vue`, `ParticipantList.vue`, `SettingsView.vue`
 - `src/utils/formatTime.ts`
+
+## 実装状況: 完了 (2026-03-19)
+
+### 実装内容
+- Participant 型（id, init, name, time）と AppSettings 型（useGlobalMaxTime, globalMaxTime）
+- useParticipants: CRUD、Fisher-Yates シャッフル、ソート、不在管理（最低2人制限）、JSON import/export、localStorage 永続化
+- useTimer: Date.now() ベース経過時間、setInterval UI 更新、start/stop/next/reset
+- useSettings: globalMaxTime、useGlobalMaxTime、localStorage 永続化
+- TimerView: プログレスバー（色変化付き）、ボタン群、参加者リスト（待機/完了/不在）、3つの質問
+- ParticipantList: 追加フォーム、一覧、JSON export/import、全削除
+- SettingsView: グローバル最大時間 ON/OFF・分入力（computed setter 統一）
+- テスト: useSettings 3件 + useParticipants 9件 + useTimer 6件 + formatTime 7件 = 25件全パス
+
+### レビュー対応
+- Warning: useTimer シングルトン化、stop()/next() の責務コメント追加、onUnmounted 削除、loadParticipants 型検証追加
+- Suggestion: handleExport エラーハンドリング、SettingsView の v-model 統一、冗長 :class 除去、マジックナンバー定数化

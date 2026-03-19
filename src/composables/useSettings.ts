@@ -1,19 +1,39 @@
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import type { AppSettings } from "../types";
 
+const STORAGE_KEY = "scrumtimer-settings";
+
 const DEFAULT_SETTINGS: AppSettings = {
-  maxTime: 120,
-  voicevoxEnabled: false,
-  voicevoxEndpoint: "http://localhost:50021",
-  voicevoxSpeakerId: 3,
+  useGlobalMaxTime: true,
+  globalMaxTime: 900, // 15分
 };
 
-/** モジュールスコープでシングルトン化 — 全コンポーネントで状態を共有する */
-const settings = ref<AppSettings>({ ...DEFAULT_SETTINGS });
+function loadSettings(): AppSettings {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+    }
+  } catch {
+    // localStorage が壊れていても安全にフォールバック
+  }
+  return { ...DEFAULT_SETTINGS };
+}
+
+/** モジュールスコープでシングルトン化 */
+const settings = ref<AppSettings>(loadSettings());
+
+// localStorage に自動永続化
+watch(
+  settings,
+  (val) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+  },
+  { deep: true },
+);
 
 /**
  * 設定管理 composable
- * Phase 2 で localStorage 永続化を実装する
  */
 export function useSettings() {
   function updateSettings(partial: Partial<AppSettings>) {
