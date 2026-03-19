@@ -76,11 +76,12 @@ export function useParticipants() {
     participants.value = participants.value.filter((p) => p.id !== id);
   }
 
-  /** Fisher-Yates シャッフル */
-  function shuffle() {
+  /** Fisher-Yates シャッフル（発表中の先頭は固定、残りのみシャッフル） */
+  function shuffle(keepFirst = false) {
     const arr = [...participants.value];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+    const start = keepFirst ? 1 : 0;
+    for (let i = arr.length - 1; i > start; i--) {
+      const j = start + Math.floor(Math.random() * (i - start + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     participants.value = arr;

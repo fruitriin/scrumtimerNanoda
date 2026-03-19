@@ -115,7 +115,7 @@ function progressColor(percent: number): string {
           <button
             class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-40"
             :disabled="participants.length <= 2"
-            @click="shuffle"
+            @click="shuffle(isRunning)"
           >
             🔀
           </button>
