@@ -44,7 +44,11 @@ export function useTimer() {
   const totalPercent = computed(() => {
     const total = participants.value.length + doneParticipants.value.length;
     if (total === 0) return 0;
-    return Math.round((doneParticipants.value.length / total) * 100);
+    // 発表中の人も「完了予定」としてカウント（1サイクル早めた進捗表示）
+    const done = isRunning.value
+      ? doneParticipants.value.length + 1
+      : doneParticipants.value.length;
+    return Math.round((Math.min(done, total) / total) * 100);
   });
 
   const totalTimePercent = computed(() => {

@@ -16,9 +16,9 @@ describe("useTimer", () => {
     const { participants, add } = participantsModule.useParticipants();
     // テスト前にクリーンな状態にする
     participants.value = [];
-    add("A", "Alice");
-    add("B", "Bob");
-    add("C", "Charlie");
+    add("Alice");
+    add("Bob");
+    add("Charlie");
 
     const timerModule = await import("./useTimer");
     return { ...timerModule.useTimer(), participants };
@@ -58,10 +58,10 @@ describe("useTimer", () => {
   it("次へで次の参加者に進むのだ", async () => {
     const { start, next, currentParticipant } = await setup();
     start();
-    const firstInit = currentParticipant.value?.init;
+    const firstName = currentParticipant.value?.name;
     vi.advanceTimersByTime(3000);
     next();
-    expect(currentParticipant.value?.init).not.toBe(firstInit);
+    expect(currentParticipant.value?.name).not.toBe(firstName);
   });
 
   it("リセットで全員待機に戻るのだ", async () => {

@@ -13,16 +13,15 @@ describe("useParticipants", () => {
 
   it("参加者を追加できるのだ", async () => {
     const { participants, add } = await loadUseParticipants();
-    add("ZD", "ずんだもん");
+    add("ずんだもん");
     expect(participants.value).toHaveLength(1);
     expect(participants.value[0].name).toBe("ずんだもん");
-    expect(participants.value[0].init).toBe("ZD");
   });
 
   it("参加者を削除できるのだ", async () => {
     const { participants, add, remove } = await loadUseParticipants();
-    add("ZD", "ずんだもん");
-    add("TK", "つむぎ");
+    add("ずんだもん");
+    add("つむぎ");
     const id = participants.value[0].id;
     remove(id);
     expect(participants.value).toHaveLength(1);
@@ -31,27 +30,28 @@ describe("useParticipants", () => {
 
   it("シャッフルしても要素数は変わらないのだ", async () => {
     const { participants, add, shuffle } = await loadUseParticipants();
-    add("A", "Alice");
-    add("B", "Bob");
-    add("C", "Charlie");
+    add("Alice");
+    add("Bob");
+    add("Charlie");
     shuffle();
     expect(participants.value).toHaveLength(3);
   });
 
-  it("ソートで名前順になるのだ", async () => {
-    const { participants, add, sort } = await loadUseParticipants();
-    add("C", "Charlie");
-    add("A", "Alice");
-    add("B", "Bob");
-    sort();
-    expect(participants.value.map((p) => p.name)).toEqual(["Alice", "Bob", "Charlie"]);
+  it("ドラッグ＆ドロップで並び替えできるのだ", async () => {
+    const { participants, add, moveParticipant } = await loadUseParticipants();
+    add("Charlie");
+    add("Bob");
+    add("Alice");
+    // Alice(0) → 2番目に移動
+    moveParticipant(0, 2);
+    expect(participants.value.map((p) => p.name)).toEqual(["Bob", "Charlie", "Alice"]);
   });
 
   it("不在にできるのだ（最低2人は残す）", async () => {
     const { participants, absentParticipants, add, markAbsent } = await loadUseParticipants();
-    add("A", "Alice");
-    add("B", "Bob");
-    add("C", "Charlie");
+    add("Alice");
+    add("Bob");
+    add("Charlie");
     const id = participants.value[0].id;
     const result = markAbsent(id);
     expect(result).toBe(true);
@@ -61,8 +61,8 @@ describe("useParticipants", () => {
 
   it("2人以下のとき不在にできないのだ", async () => {
     const { participants, add, markAbsent } = await loadUseParticipants();
-    add("A", "Alice");
-    add("B", "Bob");
+    add("Alice");
+    add("Bob");
     const result = markAbsent(participants.value[0].id);
     expect(result).toBe(false);
     expect(participants.value).toHaveLength(2);
@@ -71,9 +71,9 @@ describe("useParticipants", () => {
   it("出席に戻せるのだ", async () => {
     const { participants, absentParticipants, add, markAbsent, markPresent } =
       await loadUseParticipants();
-    add("A", "Alice");
-    add("B", "Bob");
-    add("C", "Charlie");
+    add("Alice");
+    add("Bob");
+    add("Charlie");
     const id = participants.value[0].id;
     markAbsent(id);
     markPresent(id);
@@ -83,8 +83,8 @@ describe("useParticipants", () => {
 
   it("JSON エクスポート・インポートできるのだ", async () => {
     const { participants, add, exportToJSON, purge, importFromJSON } = await loadUseParticipants();
-    add("ZD", "ずんだもん");
-    add("TK", "つむぎ");
+    add("ずんだもん");
+    add("つむぎ");
     const json = exportToJSON();
     purge();
     expect(participants.value).toHaveLength(0);
@@ -95,8 +95,8 @@ describe("useParticipants", () => {
   it("完了リストに移動・リセットできるのだ", async () => {
     const { participants, doneParticipants, add, moveFirstToDone, resetAll } =
       await loadUseParticipants();
-    add("A", "Alice");
-    add("B", "Bob");
+    add("Alice");
+    add("Bob");
     moveFirstToDone(45);
     expect(participants.value).toHaveLength(1);
     expect(doneParticipants.value).toHaveLength(1);

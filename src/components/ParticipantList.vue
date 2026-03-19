@@ -2,19 +2,18 @@
 import { ref } from "vue";
 import { useParticipants } from "../composables/useParticipants";
 
-const { participants, add, remove, exportToJSON, importFromJSON, purge } = useParticipants();
+const { participants, add, remove, moveParticipant, exportToJSON, importFromJSON, purge } =
+  useParticipants();
 
-const newInit = ref("");
 const newName = ref("");
 const importText = ref("");
 const showImport = ref(false);
+const dragIndex = ref<number | null>(null);
 
 function handleAdd() {
-  const init = newInit.value.trim();
   const name = newName.value.trim();
-  if (!init || !name) return;
-  add(init, name);
-  newInit.value = "";
+  if (!name) return;
+  add(name);
   newName.value = "";
 }
 
@@ -23,7 +22,6 @@ async function handleExport() {
   try {
     await navigator.clipboard.writeText(json);
   } catch {
-    // クリップボード API が使えない場合はフォールバック
     importText.value = json;
     showImport.value = true;
   }
@@ -35,6 +33,26 @@ function handleImport() {
   importText.value = "";
   showImport.value = false;
 }
+
+// ドラッグ＆ドロップ
+function onDragStart(index: number) {
+  dragIndex.value = index;
+}
+
+function onDragOver(e: DragEvent) {
+  e.preventDefault();
+}
+
+function onDrop(toIndex: number) {
+  if (dragIndex.value !== null && dragIndex.value !== toIndex) {
+    moveParticipant(dragIndex.value, toIndex);
+  }
+  dragIndex.value = null;
+}
+
+function onDragEnd() {
+  dragIndex.value = null;
+}
 </script>
 
 <template>
@@ -43,12 +61,6 @@ function handleImport() {
 
     <!-- 追加フォーム -->
     <form class="flex gap-2 mb-4" @submit.prevent="handleAdd">
-      <input
-        v-model="newInit"
-        type="text"
-        placeholder="イニシャル"
-        class="w-20 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
       <input
         v-model="newName"
         type="text"
@@ -63,14 +75,20 @@ function handleImport() {
       </button>
     </form>
 
-    <!-- 参加者一覧 -->
+    <!-- 参加者一覧（ドラッグ＆ドロップ対応） -->
     <ul class="space-y-1 mb-4">
       <li
-        v-for="p in participants"
+        v-for="(p, i) in participants"
         :key="p.id"
-        class="flex items-center gap-2 px-3 py-2 bg-white rounded border"
+        draggable="true"
+        class="flex items-center gap-2 px-3 py-2 bg-white rounded border cursor-grab active:cursor-grabbing transition-opacity"
+        :class="{ 'opacity-40': dragIndex === i }"
+        @dragstart="onDragStart(i)"
+        @dragover="onDragOver"
+        @drop="onDrop(i)"
+        @dragend="onDragEnd"
       >
-        <span class="font-mono text-sm text-gray-500 w-12">{{ p.init }}</span>
+        <span class="text-gray-300 select-none">⠿</span>
         <span class="flex-1">{{ p.name }}</span>
         <button class="text-red-400 hover:text-red-600" title="削除" @click="remove(p.id)">
           ✕

@@ -12,7 +12,6 @@ function loadParticipants(): Participant[] {
       if (Array.isArray(parsed)) {
         return parsed.map((p: Partial<Participant>) => ({
           id: p.id ?? crypto.randomUUID(),
-          init: p.init ?? "",
           name: p.name ?? "",
           time: typeof p.time === "number" ? p.time : 0,
         }));
@@ -42,8 +41,8 @@ watch(
  * 参加者管理 composable
  */
 export function useParticipants() {
-  function add(init: string, name: string) {
-    participants.value.unshift(createParticipant(init, name));
+  function add(name: string) {
+    participants.value.unshift(createParticipant(name));
   }
 
   function remove(id: string) {
@@ -60,8 +59,12 @@ export function useParticipants() {
     participants.value = arr;
   }
 
-  function sort() {
-    participants.value = [...participants.value].sort((a, b) => a.name.localeCompare(b.name));
+  /** ドラッグ＆ドロップ用: 参加者を fromIndex から toIndex に移動 */
+  function moveParticipant(fromIndex: number, toIndex: number) {
+    const arr = [...participants.value];
+    const [moved] = arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, moved);
+    participants.value = arr;
   }
 
   /**
@@ -110,7 +113,6 @@ export function useParticipants() {
       if (Array.isArray(parsed)) {
         participants.value = parsed.map((p: Partial<Participant>) => ({
           id: p.id ?? crypto.randomUUID(),
-          init: p.init ?? "",
           name: p.name ?? "",
           time: 0,
         }));
@@ -133,7 +135,7 @@ export function useParticipants() {
     add,
     remove,
     shuffle,
-    sort,
+    moveParticipant,
     markAbsent,
     markPresent,
     resetAll,

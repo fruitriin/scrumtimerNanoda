@@ -1,8 +1,6 @@
 /** 参加者 */
 export type Participant = {
   id: string;
-  /** イニシャル（例: "JD"） */
-  init: string;
   /** 名前 */
   name: string;
   /** 費やした時間（秒） */

@@ -23,15 +23,8 @@ const {
   reset,
 } = useTimer();
 
-const {
-  participants,
-  doneParticipants,
-  absentParticipants,
-  markAbsent,
-  markPresent,
-  shuffle,
-  sort,
-} = useParticipants();
+const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
+  useParticipants();
 const { settings } = useSettings();
 const { roomId, joinRoom } = useRoom();
 const route = useRoute();
@@ -113,7 +106,7 @@ function progressColor(percent: number): string {
       <!-- 現在の発表者 -->
       <section class="mb-6">
         <h4 class="text-sm font-semibold text-gray-500 mb-1">
-          {{ currentParticipant ? `${currentParticipant.name} [${currentParticipant.init}]` : "—" }}
+          {{ currentParticipant ? currentParticipant.name : "—" }}
         </h4>
         <div class="w-full bg-gray-200 rounded-full h-8 overflow-hidden">
           <div
@@ -137,12 +130,11 @@ function progressColor(percent: number): string {
           :disabled="participants.length === 0"
           @click="start"
         >
-          ▶ スタート {{ currentParticipant?.init ?? "" }}
+          ▶ スタート
         </button>
         <button
           v-if="isRunning"
           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          :disabled="participants.length <= 1"
           @click="next"
         >
           ⏭ 次へ
@@ -180,13 +172,6 @@ function progressColor(percent: number): string {
           >
             🔀 シャッフル
           </button>
-          <button
-            class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-40"
-            :disabled="participants.length <= 2"
-            @click="sort"
-          >
-            🔤 ソート
-          </button>
         </div>
 
         <ul class="space-y-1">
@@ -209,7 +194,7 @@ function progressColor(percent: number): string {
             >
               ⊖
             </button>
-            <span>{{ p.name }} [{{ p.init }}]</span>
+            <span>{{ p.name }}</span>
           </li>
 
           <!-- 完了 -->
@@ -219,7 +204,7 @@ function progressColor(percent: number): string {
             class="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-500 rounded"
           >
             <span>✓</span>
-            <span>{{ dp.name }} [{{ dp.init }}]</span>
+            <span>{{ dp.name }}</span>
             <span class="ml-auto" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
               {{ formatTime(dp.time) }}
             </span>
@@ -238,7 +223,7 @@ function progressColor(percent: number): string {
             >
               ⊕
             </button>
-            <span>{{ ap.name }} [{{ ap.init }}]</span>
+            <span>{{ ap.name }}</span>
           </li>
         </ul>
       </section>
