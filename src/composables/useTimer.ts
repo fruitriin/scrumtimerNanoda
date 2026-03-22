@@ -1,6 +1,7 @@
 import { ref, computed } from "vue";
 import { useParticipants } from "./useParticipants";
 import { useSettings } from "./useSettings";
+import { useAudio } from "./useAudio";
 
 /** グローバル最大時間を使わない場合のフォールバック値（2分） */
 const FALLBACK_INDIVIDUAL_MAX_TIME = 120;
@@ -20,10 +21,17 @@ const currentElapsed = ref(0);
 const totalElapsed = ref(0);
 let intervalId: ReturnType<typeof setInterval> | null = null;
 let startedAt: number | null = null;
+/** 同一参加者で音声を多重再生しないためのフラグ */
+let wrapUpPlayed = false;
+let timeupPlayed = false;
+let overtime10Played = false;
+let overtime30Played = false;
 
 export function useTimer() {
   const { participants, doneParticipants, moveFirstToDone, resetAll } = useParticipants();
   const { settings } = useSettings();
+  const { playTimeup, playStart, playComplete, playWrapUp, playOvertime10, playOvertime30 } =
+    useAudio();
 
   const currentParticipant = computed(() => participants.value[0] ?? null);
 
@@ -64,13 +72,45 @@ export function useTimer() {
   function tick() {
     if (startedAt === null) return;
     currentElapsed.value = Math.round((Date.now() - startedAt) / 1000);
+
+    const remaining = individualMaxTime.value - currentElapsed.value;
+    const overtime = currentElapsed.value - individualMaxTime.value;
+
+    const { alerts } = settings.value;
+
+    // 残り30秒で「まとめには入っているのだ？」
+    if (alerts.wrapUp && !wrapUpPlayed && remaining <= 30 && remaining > 0) {
+      wrapUpPlayed = true;
+      playWrapUp();
+    }
+
+    // 時間切れで「時間切れなのだ」音声を再生（1参加者につき1回）
+    if (alerts.timeup && !timeupPlayed && overtime >= 0) {
+      timeupPlayed = true;
+      playTimeup();
+    }
+    // 超過10秒で「ながいのだ」
+    if (alerts.overtime10 && !overtime10Played && overtime >= 10) {
+      overtime10Played = true;
+      playOvertime10();
+    }
+    // 超過30秒で「長すぎなのだ」
+    if (alerts.overtime30 && !overtime30Played && overtime >= 30) {
+      overtime30Played = true;
+      playOvertime30();
+    }
   }
 
   function start() {
     if (participants.value.length === 0) return;
     if (isRunning.value) return;
+    playStart();
     startedAt = Date.now();
     currentElapsed.value = 0;
+    wrapUpPlayed = false;
+    timeupPlayed = false;
+    overtime10Played = false;
+    overtime30Played = false;
     isRunning.value = true;
     intervalId = setInterval(tick, 1000);
   }
@@ -92,6 +132,11 @@ export function useTimer() {
     currentElapsed.value = 0;
     startedAt = null;
     isRunning.value = false;
+
+    // 全員完走したら完走音声を再生
+    if (participants.value.length === 0 && doneParticipants.value.length > 0) {
+      playComplete();
+    }
   }
 
   /**
@@ -108,6 +153,10 @@ export function useTimer() {
     moveFirstToDone(currentElapsed.value);
     startedAt = Date.now();
     currentElapsed.value = 0;
+    wrapUpPlayed = false;
+    timeupPlayed = false;
+    overtime10Played = false;
+    overtime30Played = false;
   }
 
   function reset() {
@@ -119,6 +168,10 @@ export function useTimer() {
     currentElapsed.value = 0;
     totalElapsed.value = 0;
     startedAt = null;
+    wrapUpPlayed = false;
+    timeupPlayed = false;
+    overtime10Played = false;
+    overtime30Played = false;
     resetAll();
   }
 

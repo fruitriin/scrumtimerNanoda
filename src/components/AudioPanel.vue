@@ -1,0 +1,80 @@
+<script setup lang="ts">
+import { computed } from "vue";
+import { useSettings } from "../composables/useSettings";
+import { useAudio } from "../composables/useAudio";
+
+const { settings, updateSettings } = useSettings();
+const { playTimeup } = useAudio();
+
+const volumeModel = computed({
+  get: () => Math.round(settings.value.volume * 100),
+  set: (val: number) => updateSettings({ volume: val / 100 }),
+});
+
+function toggleMute() {
+  updateSettings({ muted: !settings.value.muted });
+}
+
+const alertOptions = [
+  { key: "wrapUp" as const, label: "残り30秒「まとめに入ってる？」" },
+  { key: "timeup" as const, label: "時間切れ" },
+  { key: "overtime10" as const, label: "超過10秒「ながい」" },
+  { key: "overtime30" as const, label: "超過30秒「長すぎ」" },
+];
+
+function toggleAlert(key: keyof typeof settings.value.alerts) {
+  updateSettings({ alerts: { ...settings.value.alerts, [key]: !settings.value.alerts[key] } });
+}
+</script>
+
+<template>
+  <div class="space-y-2">
+    <!-- 音量 + ミュート + テスト -->
+    <div class="flex items-center gap-2">
+      <button
+        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200 text-sm"
+        :title="settings.muted ? 'ミュート解除' : 'ミュート'"
+        @click="toggleMute"
+      >
+        <span v-if="settings.muted || settings.volume === 0">&#x1F507;</span>
+        <span v-else-if="settings.volume < 0.5">&#x1F509;</span>
+        <span v-else>&#x1F50A;</span>
+      </button>
+
+      <input
+        v-model.number="volumeModel"
+        type="range"
+        min="0"
+        max="100"
+        class="flex-1 h-1.5 accent-emerald-500"
+        :disabled="settings.muted"
+      />
+      <span class="text-xs text-gray-400 w-8 text-right">{{ volumeModel }}%</span>
+
+      <button
+        class="px-2 py-0.5 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:opacity-40"
+        :disabled="settings.muted"
+        @click="playTimeup"
+      >
+        &#x25B6; テスト
+      </button>
+    </div>
+
+    <!-- 警告音声チェックボックス -->
+    <div class="flex flex-wrap gap-x-4 gap-y-1">
+      <label
+        v-for="opt in alertOptions"
+        :key="opt.key"
+        class="flex items-center gap-1 text-xs text-gray-600"
+      >
+        <input
+          type="checkbox"
+          class="w-3.5 h-3.5"
+          :checked="settings.alerts[opt.key]"
+          @change="toggleAlert(opt.key)"
+        />
+        {{ opt.label }}
+      </label>
+    </div>
+  </div>
+</template>

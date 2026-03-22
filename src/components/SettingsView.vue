@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useSettings } from "../composables/useSettings";
+import AudioPanel from "./AudioPanel.vue";
 
 const { settings, updateSettings, resetSettings } = useSettings();
 
@@ -45,6 +46,12 @@ const useGlobalMaxTimeModel = computed({
       <div v-else class="ml-6">
         <p class="text-sm text-gray-500">個別の持ち時間（固定 2 分）を使用するのだ。</p>
       </div>
+    </section>
+
+    <!-- 音声設定 -->
+    <section class="mb-6">
+      <h3 class="font-semibold mb-3">音声設定</h3>
+      <AudioPanel />
     </section>
 
     <!-- VoiceVox / ルーム設定（予約枠） -->

@@ -13,4 +13,15 @@ export type AppSettings = {
   useGlobalMaxTime: boolean;
   /** グローバル最大発言時間（秒） */
   globalMaxTime: number;
+  /** 音量 (0.0 〜 1.0) */
+  volume: number;
+  /** ミュート状態 */
+  muted: boolean;
+  /** 警告音声の個別有効/無効 */
+  alerts: {
+    wrapUp: boolean;
+    timeup: boolean;
+    overtime10: boolean;
+    overtime30: boolean;
+  };
 };

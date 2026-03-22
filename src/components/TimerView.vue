@@ -4,6 +4,7 @@ import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
 import { formatTime } from "../utils/formatTime";
+import AudioPanel from "./AudioPanel.vue";
 
 const {
   isRunning,
@@ -200,6 +201,11 @@ function progressColor(percent: number): string {
         >
           🔀 シャッフル
         </button>
+      </section>
+
+      <!-- 音声コントロール -->
+      <section class="mb-6 bg-gray-50 p-3 rounded-lg">
+        <AudioPanel />
       </section>
 
       <!-- 3つの質問 -->

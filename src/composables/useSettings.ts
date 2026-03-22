@@ -6,6 +6,14 @@ const STORAGE_KEY = "scrumtimer-settings";
 const DEFAULT_SETTINGS: AppSettings = {
   useGlobalMaxTime: true,
   globalMaxTime: 900, // 15分
+  volume: 0.5,
+  muted: false,
+  alerts: {
+    wrapUp: true,
+    timeup: true,
+    overtime10: true,
+    overtime30: true,
+  },
 };
 
 function loadSettings(): AppSettings {
