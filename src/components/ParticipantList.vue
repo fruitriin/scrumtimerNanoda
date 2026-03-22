@@ -2,7 +2,7 @@
 import { ref } from "vue";
 import { useParticipants } from "../composables/useParticipants";
 
-const { participants, add, remove, moveParticipant, exportToJSON, importFromJSON, purge } =
+const { masterParticipants, add, remove, moveParticipant, exportToJSON, importFromJSON, purge } =
   useParticipants();
 
 const newName = ref("");
@@ -78,7 +78,7 @@ function onDragEnd() {
     <!-- 参加者一覧（ドラッグ＆ドロップ対応） -->
     <ul class="space-y-1 mb-4">
       <li
-        v-for="(p, i) in participants"
+        v-for="(p, i) in masterParticipants"
         :key="p.id"
         draggable="true"
         class="flex items-center gap-2 px-3 py-2 bg-white rounded border cursor-grab active:cursor-grabbing transition-opacity"
@@ -94,7 +94,7 @@ function onDragEnd() {
           ✕
         </button>
       </li>
-      <li v-if="participants.length === 0" class="text-gray-400 text-center py-4">
+      <li v-if="masterParticipants.length === 0" class="text-gray-400 text-center py-4">
         参加者がいないのだ。上のフォームから追加するのだ！
       </li>
     </ul>

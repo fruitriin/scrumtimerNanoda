@@ -4,12 +4,6 @@ import { createParticipant } from "../models/Participant";
 
 const STORAGE_KEY = "scrumtimer-participants";
 
-type StoredState = {
-  participants: Participant[];
-  done: Participant[];
-  absent: Participant[];
-};
-
 function sanitizeParticipant(p: Partial<Participant>): Participant {
   return {
     id: p.id ?? crypto.randomUUID(),
@@ -18,63 +12,109 @@ function sanitizeParticipant(p: Partial<Participant>): Participant {
   };
 }
 
-function loadState(): StoredState {
+function loadMaster(): Participant[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // 新形式: { participants, done, absent }
+      // 新形式: { participants, done, absent } → マスターに統合
       if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        return {
-          participants: Array.isArray(parsed.participants)
-            ? parsed.participants.map(sanitizeParticipant)
-            : [],
-          done: Array.isArray(parsed.done) ? parsed.done.map(sanitizeParticipant) : [],
-          absent: Array.isArray(parsed.absent) ? parsed.absent.map(sanitizeParticipant) : [],
-        };
+        const all = [
+          ...(Array.isArray(parsed.participants) ? parsed.participants : []),
+          ...(Array.isArray(parsed.done) ? parsed.done : []),
+          ...(Array.isArray(parsed.absent) ? parsed.absent : []),
+        ];
+        return all.map(sanitizeParticipant);
       }
-      // 旧形式（配列のみ）: 全員を participants に復元
+      // 旧形式（配列のみ）
       if (Array.isArray(parsed)) {
-        return { participants: parsed.map(sanitizeParticipant), done: [], absent: [] };
+        return parsed.map(sanitizeParticipant);
       }
     }
   } catch {
     // localStorage が壊れていても安全にフォールバック
   }
-  return { participants: [], done: [], absent: [] };
+  return [];
 }
 
-const initialState = loadState();
+/** マスターリスト（原本）: localStorage に永続化される唯一のリスト */
+const masterParticipants = ref<Participant[]>(loadMaster());
 
-/** モジュールスコープでシングルトン化 */
-const participants = ref<Participant[]>(initialState.participants);
-const doneParticipants = ref<Participant[]>(initialState.done);
-const absentParticipants = ref<Participant[]>(initialState.absent);
+// マスターリストのみ localStorage に自動永続化
+watch(
+  masterParticipants,
+  (val) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+  },
+  { deep: true },
+);
 
-/** 全リストをまとめて localStorage に保存 */
-function saveAll() {
-  const state: StoredState = {
-    participants: participants.value,
-    done: doneParticipants.value,
-    absent: absentParticipants.value,
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+/** タイマーセッション用の一時状態（永続化しない） */
+function freshCopy(): Participant[] {
+  return masterParticipants.value.map((p) => ({ ...p, time: 0 }));
 }
 
-// localStorage に自動永続化（全リストを監視）
-watch([participants, doneParticipants, absentParticipants], saveAll, { deep: true });
+const participants = ref<Participant[]>(freshCopy());
+const doneParticipants = ref<Participant[]>([]);
+const absentParticipants = ref<Participant[]>([]);
 
 /**
  * 参加者管理 composable
  */
 export function useParticipants() {
+  // --- マスターリスト操作（参加者管理画面用） ---
+
   function add(name: string) {
-    participants.value.push(createParticipant(name));
+    masterParticipants.value.push(createParticipant(name));
+    syncFromMaster();
   }
 
   function remove(id: string) {
-    participants.value = participants.value.filter((p) => p.id !== id);
+    masterParticipants.value = masterParticipants.value.filter((p) => p.id !== id);
+    syncFromMaster();
   }
+
+  function moveParticipant(fromIndex: number, toIndex: number) {
+    const arr = [...masterParticipants.value];
+    const [moved] = arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, moved);
+    masterParticipants.value = arr;
+    syncFromMaster();
+  }
+
+  function exportToJSON(): string {
+    return JSON.stringify(masterParticipants.value);
+  }
+
+  function importFromJSON(json: string) {
+    try {
+      const parsed = JSON.parse(json);
+      if (Array.isArray(parsed)) {
+        masterParticipants.value = parsed.map((p: Partial<Participant>) => ({
+          id: p.id ?? crypto.randomUUID(),
+          name: p.name ?? "",
+          time: 0,
+        }));
+        syncFromMaster();
+      }
+    } catch {
+      console.error("参加者 JSON のパースに失敗したのだ");
+    }
+  }
+
+  function purge() {
+    masterParticipants.value = [];
+    syncFromMaster();
+  }
+
+  /** マスター変更時にタイマー状態をリセット */
+  function syncFromMaster() {
+    participants.value = freshCopy();
+    doneParticipants.value = [];
+    absentParticipants.value = [];
+  }
+
+  // --- タイマーセッション操作 ---
 
   /** Fisher-Yates シャッフル（発表中の先頭は固定、残りのみシャッフル） */
   function shuffle(keepFirst = false) {
@@ -84,14 +124,6 @@ export function useParticipants() {
       const j = start + Math.floor(Math.random() * (i - start + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
-    participants.value = arr;
-  }
-
-  /** ドラッグ＆ドロップ用: 参加者を fromIndex から toIndex に移動 */
-  function moveParticipant(fromIndex: number, toIndex: number) {
-    const arr = [...participants.value];
-    const [moved] = arr.splice(fromIndex, 1);
-    arr.splice(toIndex, 0, moved);
     participants.value = arr;
   }
 
@@ -114,13 +146,9 @@ export function useParticipants() {
     participants.value.push(p);
   }
 
-  /** 完了リスト → 待機リストに全員戻す */
+  /** 完了リスト → 待機リストに全員戻す（マスターから再コピー） */
   function resetAll() {
-    for (const p of doneParticipants.value) {
-      p.time = 0;
-      participants.value.push(p);
-    }
-    doneParticipants.value = [];
+    syncFromMaster();
   }
 
   /** 先頭を完了リストに移動 */
@@ -131,32 +159,8 @@ export function useParticipants() {
     doneParticipants.value.push(p);
   }
 
-  function exportToJSON(): string {
-    return JSON.stringify(participants.value);
-  }
-
-  function importFromJSON(json: string) {
-    try {
-      const parsed = JSON.parse(json);
-      if (Array.isArray(parsed)) {
-        participants.value = parsed.map((p: Partial<Participant>) => ({
-          id: p.id ?? crypto.randomUUID(),
-          name: p.name ?? "",
-          time: 0,
-        }));
-      }
-    } catch {
-      console.error("参加者 JSON のパースに失敗したのだ");
-    }
-  }
-
-  function purge() {
-    participants.value = [];
-    doneParticipants.value = [];
-    absentParticipants.value = [];
-  }
-
   return {
+    masterParticipants,
     participants,
     doneParticipants,
     absentParticipants,
