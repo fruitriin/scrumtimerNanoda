@@ -8,6 +8,18 @@
 |---|---|---|
 | [type-vs-interface.md](type-vs-interface.md) | TypeScript で type を優先する方針とその理由。一貫性・Vue Composable 相性・宣言マージ回避 | type, interface, TypeScript, 型宣言, Vue, Composable, ユニオン型, 交差型 |
 
+## 音声・メディア
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [audio-playback-pattern.md](audio-playback-pattern.md) | jsdom の play() 未実装対策、トラック定義の宣言的パターン、音量一括同期 | Audio, jsdom, play(), VoiceVox, WAV, useAudio, オプショナルチェーン |
+
+## WebRTC・リアルタイム同期
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [webrtc-room-sync.md](webrtc-room-sync.md) | startedAt 共有による冪等な同期設計、毎秒 broadcast 廃止、localStorage マスターデータ分離 | WebRTC, PeerJS, startedAt, 冪等, broadcast, localStorage, masterParticipants, SyncState |
+
 ## ビルドツール・開発環境
 
 | ファイル | 要約 | キーワード |
