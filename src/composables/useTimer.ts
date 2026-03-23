@@ -175,6 +175,46 @@ export function useTimer() {
     resetAll();
   }
 
+  /** startedAt を取得（ルーム同期用） */
+  function getStartedAt(): number | null {
+    return startedAt;
+  }
+
+  /**
+   * ゲスト用: ホストから受信した状態を適用し、自前で tick を開始する。
+   * startedAt を共有するので currentElapsed は各自が冪等に計算する。
+   */
+  function applyTimerState(state: {
+    isRunning: boolean;
+    startedAt: number | null;
+    totalElapsed: number;
+  }) {
+    // まず既存の interval を停止
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+
+    totalElapsed.value = state.totalElapsed;
+    startedAt = state.startedAt;
+    isRunning.value = state.isRunning;
+
+    // 音声フラグをリセット
+    wrapUpPlayed = false;
+    timeupPlayed = false;
+    overtime10Played = false;
+    overtime30Played = false;
+
+    if (state.isRunning && state.startedAt !== null) {
+      // startedAt から currentElapsed を即座に計算
+      currentElapsed.value = Math.round((Date.now() - state.startedAt) / 1000);
+      // 自前の tick を開始
+      intervalId = setInterval(tick, 1000);
+    } else {
+      currentElapsed.value = 0;
+    }
+  }
+
   return {
     isRunning,
     currentElapsed,
@@ -188,5 +228,7 @@ export function useTimer() {
     stop,
     next,
     reset,
+    getStartedAt,
+    applyTimerState,
   };
 }

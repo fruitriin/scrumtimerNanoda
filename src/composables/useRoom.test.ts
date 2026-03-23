@@ -81,7 +81,7 @@ describe("useRoom", () => {
         doneParticipants: [],
         absentParticipants: [],
         isRunning: false,
-        currentElapsed: 0,
+        startedAt: null,
         totalElapsed: 0,
       },
     };

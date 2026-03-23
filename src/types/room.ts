@@ -6,7 +6,7 @@ export type SyncState = {
   doneParticipants: Participant[];
   absentParticipants: Participant[];
   isRunning: boolean;
-  currentElapsed: number;
+  startedAt: number | null;
   totalElapsed: number;
 };
 

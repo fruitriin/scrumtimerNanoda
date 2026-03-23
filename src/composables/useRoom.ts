@@ -1,4 +1,4 @@
-import { ref, watch, type WatchStopHandle } from "vue";
+import { ref } from "vue";
 import Peer from "peerjs";
 import type { DataConnection } from "peerjs";
 import { nanoid } from "nanoid";
@@ -22,7 +22,6 @@ let peer: Peer | null = null;
 let connections: DataConnection[] = [];
 let hostConnection: DataConnection | null = null;
 let reconnectAttempts = 0;
-let watchStopHandle: WatchStopHandle | null = null;
 let idRetryCount = 0;
 
 /** 受信データが RoomMessage かどうかを検証する型ガード */
@@ -39,12 +38,23 @@ function isRoomMessage(data: unknown): data is RoomMessage {
  * WebRTC ルーム同期 composable（モジュールスコープでシングルトン化）
  *
  * スター型トポロジー: ホストが状態を管理し、ゲストは操作をホストに送信。
- * クリーンアップ: leaveRoom() で全接続・watch を破棄する。
+ *
+ * 同期タイミング: 開始・ターン交代・全員終了・途中参加の fetch のみ。
+ * currentElapsed は startedAt から各クライアントが冪等に計算する。
  */
 export function useRoom() {
   const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
     useParticipants();
-  const { isRunning, currentElapsed, totalElapsed, start, stop, next, reset } = useTimer();
+  const {
+    isRunning,
+    totalElapsed,
+    start,
+    stop,
+    next,
+    reset,
+    getStartedAt,
+    applyTimerState,
+  } = useTimer();
 
   /** 現在の状態をスナップショットとして取得 */
   function getStateSnapshot(): SyncState {
@@ -53,7 +63,7 @@ export function useRoom() {
       doneParticipants: doneParticipants.value,
       absentParticipants: absentParticipants.value,
       isRunning: isRunning.value,
-      currentElapsed: currentElapsed.value,
+      startedAt: getStartedAt(),
       totalElapsed: totalElapsed.value,
     };
   }
@@ -63,9 +73,11 @@ export function useRoom() {
     participants.value = state.participants;
     doneParticipants.value = state.doneParticipants;
     absentParticipants.value = state.absentParticipants;
-    isRunning.value = state.isRunning;
-    currentElapsed.value = state.currentElapsed;
-    totalElapsed.value = state.totalElapsed;
+    applyTimerState({
+      isRunning: state.isRunning,
+      startedAt: state.startedAt,
+      totalElapsed: state.totalElapsed,
+    });
   }
 
   /** 全接続にメッセージをブロードキャスト（ホスト） */
@@ -144,6 +156,7 @@ export function useRoom() {
 
     conn.on("open", () => {
       connectedPeers.value = connections.filter((c) => c.open).length;
+      // 途中参加: 現在の全状態を送信
       void conn.send({ type: "sync", state: getStateSnapshot() } satisfies RoomMessage);
       broadcast({ type: "peer-joined", count: connectedPeers.value });
     });
@@ -199,18 +212,6 @@ export function useRoom() {
       connectionStatus.value = "disconnected";
       errorMessage.value = "シグナリングサーバーから切断されたのだ";
     });
-
-    // 既存の watch を停止してから再登録（重複防止）
-    watchStopHandle?.();
-    watchStopHandle = watch(
-      [participants, doneParticipants, absentParticipants, isRunning, currentElapsed, totalElapsed],
-      () => {
-        if (isHost.value && connectionStatus.value === "connected") {
-          broadcastState();
-        }
-      },
-      { deep: true },
-    );
 
     return id;
   }
@@ -299,8 +300,6 @@ export function useRoom() {
 
   /** 接続をクリーンアップ */
   function cleanup() {
-    watchStopHandle?.();
-    watchStopHandle = null;
     if (hostConnection) {
       hostConnection.close();
       hostConnection = null;
