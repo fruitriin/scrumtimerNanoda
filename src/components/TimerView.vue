@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
+import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
 import AudioPanel from "./AudioPanel.vue";
 
@@ -24,6 +25,7 @@ const {
 const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
   useParticipants();
 const { settings } = useSettings();
+const { roomId, sendAction } = useRoom();
 
 const hasParticipants = computed(
   () => participants.value.length > 0 || doneParticipants.value.length > 0,
@@ -42,6 +44,42 @@ function progressColor(percent: number): string {
   if (percent >= 95) return "bg-red-500";
   if (percent > 75) return "bg-yellow-500";
   return "bg-emerald-500";
+}
+
+/** ルームモード時は sendAction 経由、スタンドアロン時は直接実行 */
+function handleStart() {
+  if (roomId.value) sendAction({ kind: "start" });
+  else start();
+}
+
+function handleStop() {
+  if (roomId.value) sendAction({ kind: "stop" });
+  else stop();
+}
+
+function handleNext() {
+  if (roomId.value) sendAction({ kind: "next" });
+  else next();
+}
+
+function handleReset() {
+  if (roomId.value) sendAction({ kind: "reset" });
+  else reset();
+}
+
+function handleShuffle() {
+  if (roomId.value) sendAction({ kind: "shuffle" });
+  else shuffle(isRunning.value);
+}
+
+function handleMarkAbsent(id: string) {
+  if (roomId.value) sendAction({ kind: "markAbsent", participantId: id });
+  else markAbsent(id);
+}
+
+function handleMarkPresent(id: string) {
+  if (roomId.value) sendAction({ kind: "markPresent", participantId: id });
+  else markPresent(id);
 }
 </script>
 
@@ -140,7 +178,7 @@ function progressColor(percent: number): string {
               class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs"
               :disabled="participants.length <= 2 || (i === 0 && isRunning)"
               title="不在にする"
-              @click="markAbsent(p.id)"
+              @click="handleMarkAbsent(p.id)"
             >
               ⊖
             </button>
@@ -158,7 +196,7 @@ function progressColor(percent: number): string {
             <button
               class="text-gray-400 hover:text-emerald-500 text-xs"
               title="出席に戻す"
-              @click="markPresent(ap.id)"
+              @click="handleMarkPresent(ap.id)"
             >
               ⊕
             </button>
@@ -173,31 +211,31 @@ function progressColor(percent: number): string {
           v-if="!isRunning"
           class="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-40"
           :disabled="participants.length === 0"
-          @click="start"
+          @click="handleStart"
         >
           ▶ スタート
         </button>
         <button
           v-if="isRunning"
           class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          @click="next"
+          @click="handleNext"
         >
           ⏭ 次へ
         </button>
         <button
           class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-40"
           :disabled="!isRunning"
-          @click="stop"
+          @click="handleStop"
         >
           ⏹ ストップ
         </button>
-        <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" @click="reset">
+        <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" @click="handleReset">
           ↻ リセット
         </button>
         <button
           class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 disabled:opacity-40"
           :disabled="participants.length <= 2"
-          @click="shuffle(isRunning)"
+          @click="handleShuffle"
         >
           🔀 シャッフル
         </button>

@@ -216,7 +216,14 @@ vp test              # ウォッチモードでテスト
 ```
 
 - **Vitest**: Vite+ 組込みのテストランナー。composables とユーティリティのユニットテスト
-- **Playwright MCP**: E2E テスト。実際のブラウザ操作でタイマー・ルーム同期・VoiceVox 連携を検証（予定）
+- **Playwright MCP**: E2E テスト。実際のブラウザ操作でタイマー・ルーム同期・VoiceVox 連携を検証
 - テストファイルは `src/**/*.test.ts` に配置（コロケーション）
+- E2E テストは `e2e/` に配置
 
 品質ゲートの Stage 1 で `vp build && vp check src/ && vp test run` を実行する。
+
+### Playwright MCP の活用方針
+
+- **テストコード作成**: Playwright MCP でブラウザを操作し、E2E テストシナリオの Playwright コード一式（`e2e/`）を作成する
+- **バグ調査**: 未知のバグの再現・原因特定に Playwright MCP を使ってインタラクティブにブラウザを操作してよい
+- **開発サーバー**: E2E テスト実行前に `vp dev` で開発サーバーを起動すること（デフォルト `http://localhost:5173`）

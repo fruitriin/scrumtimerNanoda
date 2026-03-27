@@ -116,7 +116,7 @@ export function useRoom() {
         markPresent(action.participantId);
         break;
       case "shuffle":
-        shuffle();
+        shuffle(isRunning.value);
         break;
     }
     broadcastState();
