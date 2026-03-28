@@ -1,13 +1,31 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, defineAsyncComponent } from "vue";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
 import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
 import AudioPanel from "./AudioPanel.vue";
-import MemoEditor from "./MemoEditor.vue";
-import PublicMemoList from "./PublicMemoList.vue";
+
+// バンドル分割: Tiptap/DOMPurify 等の重い依存を含むためチャンクを分離
+const MemoEditor = defineAsyncComponent({
+  loader: () => import("./MemoEditor.vue"),
+  loadingComponent: { template: '<p class="text-sm text-gray-400 p-2">読み込み中…</p>' },
+  errorComponent: {
+    template: '<p class="text-sm text-red-500 p-2">メモの読み込みに失敗したのだ</p>',
+  },
+  delay: 200,
+  timeout: 10000,
+});
+const PublicMemoList = defineAsyncComponent({
+  loader: () => import("./PublicMemoList.vue"),
+  loadingComponent: { template: '<p class="text-sm text-gray-400 p-2">読み込み中…</p>' },
+  errorComponent: {
+    template: '<p class="text-sm text-red-500 p-2">メモ一覧の読み込みに失敗したのだ</p>',
+  },
+  delay: 200,
+  timeout: 10000,
+});
 
 const {
   isRunning,
