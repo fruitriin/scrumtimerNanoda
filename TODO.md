@@ -20,7 +20,7 @@
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0008-test-coverage.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0012-accessibility-responsive.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0013-bundle-size-optimization.md`~~ | ~~完了~~ |
-| 差込 | 品質 | `docs/plans/0014-e2e-test-expansion.md` | 未着手 |
+| ~~差込~~ | ~~品質~~ | ~~`docs/plans/0014-e2e-test-expansion.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0015-error-handling.md`~~ | ~~完了~~ |
 
 オーナーリクエスト:
@@ -45,3 +45,4 @@
 | 品質 | `docs/plans/0013-bundle-size-optimization.md` | 完了 (2026-03-28) |
 | 品質 | `docs/plans/0012-accessibility-responsive.md` | 完了 (2026-03-28) |
 | 品質 | `docs/plans/0015-error-handling.md` | 完了 (2026-03-28) |
+| 品質 | `docs/plans/0014-e2e-test-expansion.md` | 完了 (2026-03-28) |
