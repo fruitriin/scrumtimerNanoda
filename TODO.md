@@ -22,7 +22,7 @@
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0013-bundle-size-optimization.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0014-e2e-test-expansion.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0015-error-handling.md`~~ | ~~完了~~ |
-| 差込 | 品質 | `docs/plans/0016-pwa-offline.md` | 未着手 |
+| ~~差込~~ | ~~品質~~ | ~~`docs/plans/0016-pwa-offline.md`~~ | ~~却下（ネットワーク不安定環境での利用想定なし）~~ |
 
 オーナーリクエスト:
 タスクが無くなったら以下に取り組んでください
