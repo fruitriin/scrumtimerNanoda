@@ -18,6 +18,8 @@
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0011-fix-lint-errors.md`~~ | ~~完了~~ |
 | ~~5~~ | ~~Phase 2~~ | ~~`docs/plans/0005-daily-memo.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0008-test-coverage.md`~~ | ~~完了~~ |
+| 差込 | 品質 | `docs/plans/0012-accessibility-responsive.md` | 未着手 |
+| 差込 | 品質 | `docs/plans/0013-bundle-size-optimization.md` | 未着手 |
 
 オーナーリクエスト:
 タスクが無くなったら以下に取り組んでください

@@ -29,7 +29,7 @@ watch(
   () => myMemo.value.publicContent,
   (newContent) => {
     if (publicEditor.value && publicEditor.value.getHTML() !== newContent) {
-      publicEditor.value.commands.setContent(newContent, false);
+      publicEditor.value.commands.setContent(newContent, { emitUpdate: false });
     }
   },
 );
@@ -38,7 +38,7 @@ watch(
   () => myMemo.value.privateContent,
   (newContent) => {
     if (privateEditor.value && privateEditor.value.getHTML() !== newContent) {
-      privateEditor.value.commands.setContent(newContent, false);
+      privateEditor.value.commands.setContent(newContent, { emitUpdate: false });
     }
   },
 );
