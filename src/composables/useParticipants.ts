@@ -1,6 +1,7 @@
 import { ref, watch } from "vue";
 import type { Participant } from "../types";
 import { createParticipant } from "../models/Participant";
+import { safeSetItem } from "../utils/safeStorage";
 
 const STORAGE_KEY = "scrumtimer-participants";
 
@@ -44,7 +45,7 @@ const masterParticipants = ref<Participant[]>(loadMaster());
 watch(
   masterParticipants,
   (val) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+    safeSetItem(STORAGE_KEY, JSON.stringify(val));
   },
   { deep: true },
 );

@@ -1,4 +1,4 @@
-import { watch } from "vue";
+import { ref, watch } from "vue";
 import { useSettings } from "./useSettings";
 
 /** 音声トラック定義: ファイル名（拡張子なし） */
@@ -36,12 +36,21 @@ function syncAudio() {
 syncAudio();
 watch(() => [settings.value.volume, settings.value.muted], syncAudio);
 
+/** 音声再生エラーの通知用 */
+const audioError = ref<string | null>(null);
+let autoplayBlocked = false;
+
 function play(name: TrackName) {
   const audio = tracks[name];
   audio.currentTime = 0;
   // play() は Promise を返すが、jsdom 等では undefined を返す場合がある
-  audio.play()?.catch(() => {
-    // ユーザー操作なしでは再生がブロックされる場合がある
+  audio.play()?.catch((err: DOMException) => {
+    if (err.name === "NotAllowedError" && !autoplayBlocked) {
+      autoplayBlocked = true;
+      audioError.value = "音声を再生するには画面を一度タップしてほしいのだ";
+    } else if (err.name !== "NotAllowedError") {
+      console.warn(`音声再生失敗 (${name}):`, err.message);
+    }
   });
 }
 
@@ -50,11 +59,16 @@ function play(name: TrackName) {
  */
 export function useAudio() {
   return {
+    audioError,
     playStart: () => play("start"),
     playWrapUp: () => play("wrap-up"),
     playTimeup: () => play("timeup"),
     playOvertime10: () => play("overtime-10"),
     playOvertime30: () => play("overtime-30"),
     playComplete: () => play("complete"),
+    dismissAudioError: () => {
+      audioError.value = null;
+      autoplayBlocked = false;
+    },
   };
 }

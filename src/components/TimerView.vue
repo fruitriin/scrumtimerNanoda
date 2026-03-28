@@ -5,6 +5,7 @@ import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
 import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
+import { storageError, dismissStorageError } from "../utils/safeStorage";
 import AudioPanel from "./AudioPanel.vue";
 
 // バンドル分割: Tiptap/DOMPurify 等の重い依存を含むためチャンクを分離
@@ -142,6 +143,22 @@ function handleRemoveTemporary(id: string) {
 
     <!-- タイマー画面 -->
     <div v-else>
+      <!-- ストレージエラー通知 -->
+      <div
+        v-if="storageError"
+        role="alert"
+        class="mb-4 bg-red-50 text-red-700 text-sm p-3 rounded-lg flex items-center justify-between"
+      >
+        <span>{{ storageError }}</span>
+        <button
+          class="text-red-500 hover:text-red-700"
+          aria-label="閉じる"
+          @click="dismissStorageError"
+        >
+          ✕
+        </button>
+      </div>
+
       <!-- 全体進捗 -->
       <section class="mb-4">
         <h4 class="text-sm font-semibold text-gray-500 mb-1">全体進捗</h4>

@@ -4,7 +4,7 @@ import { useSettings } from "../composables/useSettings";
 import { useAudio } from "../composables/useAudio";
 
 const { settings, updateSettings } = useSettings();
-const { playTimeup } = useAudio();
+const { playTimeup, audioError, dismissAudioError } = useAudio();
 
 const volumeModel = computed({
   get: () => Math.round(settings.value.volume * 100),
@@ -78,6 +78,22 @@ function toggleAlert(key: keyof typeof settings.value.alerts) {
         />
         {{ opt.label }}
       </label>
+    </div>
+
+    <!-- 音声再生エラー通知 -->
+    <div
+      v-if="audioError"
+      role="alert"
+      class="flex items-center justify-between bg-yellow-50 text-yellow-800 text-xs p-2 rounded"
+    >
+      <span>{{ audioError }}</span>
+      <button
+        class="text-yellow-600 hover:text-yellow-800 ml-2"
+        aria-label="閉じる"
+        @click="dismissAudioError"
+      >
+        ✕
+      </button>
     </div>
   </div>
 </template>

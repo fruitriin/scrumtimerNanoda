@@ -418,6 +418,7 @@ export function useRoom() {
       return;
     }
     reconnectAttempts++;
+    errorMessage.value = null; // 再接続中はエラーをクリア
     const delay = RECONNECT_BASE_DELAY * Math.pow(2, reconnectAttempts - 1);
     setTimeout(() => {
       if (connectionStatus.value === "disconnected" && roomId.value) {

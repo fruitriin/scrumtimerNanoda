@@ -1,5 +1,6 @@
 import { ref, watch } from "vue";
 import type { AppSettings } from "../types";
+import { safeSetItem } from "../utils/safeStorage";
 
 const STORAGE_KEY = "scrumtimer-settings";
 
@@ -35,7 +36,7 @@ const settings = ref<AppSettings>(loadSettings());
 watch(
   settings,
   (val) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+    safeSetItem(STORAGE_KEY, JSON.stringify(val));
   },
   { deep: true },
 );

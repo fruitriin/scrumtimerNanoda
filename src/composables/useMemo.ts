@@ -1,5 +1,6 @@
 import { ref, watch } from "vue";
 import type { DailyMemo, PublicMemoPayload } from "../types";
+import { safeSetItem } from "../utils/safeStorage";
 
 const STORAGE_KEY = "scrumtimer-memos";
 
@@ -50,7 +51,7 @@ watch(
       publicContent: val.publicContent,
       privateContent: val.privateContent,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    safeSetItem(STORAGE_KEY, JSON.stringify(all));
   },
   { deep: true },
 );
