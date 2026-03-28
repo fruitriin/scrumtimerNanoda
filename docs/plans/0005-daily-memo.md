@@ -140,3 +140,20 @@ type StoredMemos = {
 - `src/composables/useRoom.ts`（メモ同期のブロードキャスト追加）
 - `src/composables/useSettings.ts`（メモ関連設定キー追加）
 - `package.json`（Markdown エディタライブラリ追加）
+
+## 実装結果
+
+- Tiptap を WYSIWYG エディタとして採用（@tiptap/vue-3 + @tiptap/starter-kit）
+- useMemo composable: CRUD、localStorage日別永続化、WebRTC公開メモ同期
+- MemoEditor: 公開/秘匿タブ切り替え式 WYSIWYG エディタ
+- PublicMemoList: DOMPurify でサニタイズした公開メモ一覧（折りたたみ可能）
+- TimerView: md:grid-cols-2 レスポンシブ2カラムレイアウト
+- WebRTC: memo-update メッセージ、デバウンス500ms、ホストリレー、接続状態ガード
+- Map リアクティビティ: 参照更新方式で Vue の変更検知を確保
+- テスト: 11テスト新規（合計61テスト）
+- 完了日: 2026-03-28
+
+### 未実装（Plan からの差分）
+- useSettings へのメモ関連設定キー追加（現状は設定不要）
+- MemoEditor ツールバー（キーボードショートカットのみ、Suggestion として記録）
+- 過去メモの日付切り替えUI（loadMemoForDate / getSavedDates は実装済み）

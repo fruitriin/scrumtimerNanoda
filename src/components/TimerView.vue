@@ -6,6 +6,8 @@ import { useSettings } from "../composables/useSettings";
 import { useRoom } from "../composables/useRoom";
 import { formatTime } from "../utils/formatTime";
 import AudioPanel from "./AudioPanel.vue";
+import MemoEditor from "./MemoEditor.vue";
+import PublicMemoList from "./PublicMemoList.vue";
 
 const {
   isRunning,
@@ -107,7 +109,7 @@ function handleRemoveTemporary(id: string) {
 </script>
 
 <template>
-  <div class="p-4 max-w-2xl mx-auto">
+  <div class="p-4 max-w-5xl mx-auto">
     <!-- 参加者がいない場合 -->
     <div v-if="!hasParticipants" class="text-center py-12">
       <h2 class="text-2xl font-bold mb-4">参加者がいないのだ！</h2>
@@ -305,19 +307,37 @@ function handleRemoveTemporary(id: string) {
         </button>
       </section>
 
-      <!-- 音声コントロール -->
-      <section class="mb-6 bg-gray-50 p-3 rounded-lg">
-        <AudioPanel />
-      </section>
+      <!-- 2カラムレイアウト: 左=音声+質問、右=メモ -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <!-- 音声コントロール -->
+          <section class="mb-4 bg-gray-50 p-3 rounded-lg">
+            <AudioPanel />
+          </section>
 
-      <!-- 3つの質問 -->
-      <section class="mb-6 bg-emerald-50 p-4 rounded-lg">
-        <h4 class="font-semibold mb-2">デイリースクラムの質問なのだ</h4>
-        <ol class="list-decimal list-inside space-y-1 text-gray-700">
-          <li>昨日やったことは？</li>
-          <li>今日やることは？</li>
-          <li>困っていることは？</li>
-        </ol>
+          <!-- 3つの質問 -->
+          <section class="bg-emerald-50 p-4 rounded-lg">
+            <h4 class="font-semibold mb-2">デイリースクラムの質問なのだ</h4>
+            <ol class="list-decimal list-inside space-y-1 text-gray-700">
+              <li>昨日やったことは？</li>
+              <li>今日やることは？</li>
+              <li>困っていることは？</li>
+            </ol>
+          </section>
+        </div>
+
+        <!-- 自分のメモ -->
+        <div>
+          <section class="bg-gray-50 p-3 rounded-lg">
+            <h4 class="text-sm font-semibold text-gray-600 mb-2">自分のメモ</h4>
+            <MemoEditor />
+          </section>
+        </div>
+      </div>
+
+      <!-- みんなの公開メモ -->
+      <section class="mb-6 bg-gray-50 p-3 rounded-lg">
+        <PublicMemoList />
       </section>
     </div>
   </div>

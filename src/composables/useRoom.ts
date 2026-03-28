@@ -4,7 +4,9 @@ import type { DataConnection } from "peerjs";
 import { nanoid } from "nanoid";
 import { useParticipants } from "./useParticipants";
 import { useTimer } from "./useTimer";
+import { useMemo } from "./useMemo";
 import type { ConnectionStatus, RoomMessage, SyncState, TimerAction } from "../types/room";
+import type { PublicMemoPayload } from "../types";
 
 const PEER_ID_PREFIX = "scrum-nanoda-";
 const RECONNECT_ATTEMPTS = 3;
@@ -42,7 +44,7 @@ function isRoomMessage(data: unknown): data is RoomMessage {
   const d = data as Record<string, unknown>;
   return (
     typeof d.type === "string" &&
-    ["sync", "action", "peer-joined", "peer-left", "timekeep"].includes(d.type)
+    ["sync", "action", "peer-joined", "peer-left", "timekeep", "memo-update"].includes(d.type)
   );
 }
 
@@ -68,6 +70,7 @@ export function useRoom() {
   } = useParticipants();
   const { isRunning, totalElapsed, start, stop, next, reset, getStartedAt, applyTimerState } =
     useTimer();
+  const { applyPublicMemo } = useMemo();
 
   /** 現在の状態をスナップショットとして取得 */
   function getStateSnapshot(): SyncState {
@@ -156,6 +159,11 @@ export function useRoom() {
     if (data.type === "action") {
       executeAction(data.action);
     }
+    if (data.type === "memo-update") {
+      applyPublicMemo(data.memo);
+      // 他のゲストにもリレー
+      broadcast(data);
+    }
   }
 
   /** ホストからのメッセージを処理（ゲスト） */
@@ -169,6 +177,9 @@ export function useRoom() {
         applyState(data.state);
         peerList = data.peerList;
         generation = data.generation;
+        break;
+      case "memo-update":
+        applyPublicMemo(data.memo);
         break;
       case "peer-joined":
       case "peer-left":
@@ -425,6 +436,23 @@ export function useRoom() {
     }
   }
 
+  /** メモ更新をブロードキャスト（デバウンス 500ms） */
+  let memoDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function sendMemoUpdate(memo: PublicMemoPayload) {
+    if (connectionStatus.value === "disconnected") return;
+    if (memoDebounceTimer) clearTimeout(memoDebounceTimer);
+    memoDebounceTimer = setTimeout(() => {
+      const msg: RoomMessage = { type: "memo-update", memo };
+      if (isHost.value) {
+        applyPublicMemo(memo);
+        broadcast(msg);
+      } else if (hostConnection?.open) {
+        void hostConnection.send(msg);
+      }
+    }, 500);
+  }
+
   /** 接続をクリーンアップ */
   function cleanup() {
     if (hostConnection) {
@@ -444,6 +472,10 @@ export function useRoom() {
     peerList = [];
     myPeerId = null;
     probeGeneration = null;
+    if (memoDebounceTimer) {
+      clearTimeout(memoDebounceTimer);
+      memoDebounceTimer = null;
+    }
   }
 
   /** ルームから退出 */
@@ -470,5 +502,6 @@ export function useRoom() {
     joinRoom,
     leaveRoom,
     sendAction,
+    sendMemoUpdate,
   };
 }

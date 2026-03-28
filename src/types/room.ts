@@ -1,4 +1,4 @@
-import type { Participant } from "./index";
+import type { Participant, PublicMemoPayload } from "./index";
 
 /** ホスト → ゲスト: 同期する状態 */
 export type SyncState = {
@@ -35,7 +35,8 @@ export type RoomMessage =
   | { type: "action"; action: TimerAction }
   | { type: "peer-joined"; count: number }
   | { type: "peer-left"; count: number }
-  | { type: "timekeep"; event: TimekeepEvent };
+  | { type: "timekeep"; event: TimekeepEvent }
+  | { type: "memo-update"; memo: PublicMemoPayload };
 
 /** 接続状態 */
 export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "migrating";
