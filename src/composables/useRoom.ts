@@ -30,7 +30,6 @@ let idRetryCount = 0;
 let generation = 0;
 let peerList: string[] = [];
 let myPeerId: string | null = null;
-let lastSyncState: SyncState | null = null;
 
 /** 世代に対応する Peer ID を生成 */
 function hostPeerId(id: string, gen: number): string {
@@ -168,7 +167,6 @@ export function useRoom() {
     switch (data.type) {
       case "sync":
         applyState(data.state);
-        lastSyncState = data.state;
         peerList = data.peerList;
         generation = data.generation;
         break;
@@ -371,7 +369,7 @@ export function useRoom() {
 
     peer.on("open", () => {
       connectionStatus.value = "connected";
-      // 状態はローカルに保持済み（lastSyncState 経由で適用済み）
+      // 状態は直前の sync 受信時に applyState 済みのため、再適用不要
     });
 
     peer.on("connection", (conn) => {
@@ -445,7 +443,6 @@ export function useRoom() {
     generation = 0;
     peerList = [];
     myPeerId = null;
-    lastSyncState = null;
     probeGeneration = null;
   }
 

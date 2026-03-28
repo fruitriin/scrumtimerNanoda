@@ -15,7 +15,7 @@
 | ~~差込~~ | ~~インフラ~~ | ~~`docs/plans/0006-github-pages-deploy.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~UIUX~~ | ~~`docs/plans/0007-uiux-feedback.md`~~ | ~~完了~~ |
 | ~~4~~ | ~~Phase 2~~ | ~~`docs/plans/0004-voicevox-timekeep.md`~~ | ~~完了（プリベイクWAV方式で実装）~~ |
-| **差込** | **品質** | **`docs/plans/0011-fix-lint-errors.md`** | **未着手** |
+| ~~差込~~ | ~~品質~~ | ~~`docs/plans/0011-fix-lint-errors.md`~~ | ~~完了~~ |
 | 5 | Phase 2 | `docs/plans/0005-daily-memo.md` | 未着手 |
 | 差込 | 品質 | `docs/plans/0008-test-coverage.md` | 未着手 |
 
