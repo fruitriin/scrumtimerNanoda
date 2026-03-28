@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { nextTick } from "vue";
 
 describe("useParticipants", () => {
   beforeEach(() => {
@@ -105,5 +106,96 @@ describe("useParticipants", () => {
     resetAll();
     expect(participants.value).toHaveLength(2);
     expect(doneParticipants.value).toHaveLength(0);
+  });
+
+  describe("マスター/セッション分離", () => {
+    it("add がマスターとセッション両方に反映されるのだ", async () => {
+      const { masterParticipants, participants, add } = await loadUseParticipants();
+      add("ずんだもん");
+      expect(masterParticipants.value).toHaveLength(1);
+      expect(participants.value).toHaveLength(1);
+    });
+
+    it("remove がマスターとセッション両方から削除されるのだ", async () => {
+      const { masterParticipants, participants, add, remove } = await loadUseParticipants();
+      add("Alice");
+      add("Bob");
+      const id = masterParticipants.value[0].id;
+      remove(id);
+      expect(masterParticipants.value).toHaveLength(1);
+      expect(participants.value).toHaveLength(1);
+    });
+
+    it("resetAll がマスターから再コピーするのだ", async () => {
+      const { masterParticipants, participants, doneParticipants, add, moveFirstToDone, resetAll } =
+        await loadUseParticipants();
+      add("Alice");
+      add("Bob");
+      moveFirstToDone(30);
+      expect(participants.value).toHaveLength(1);
+      expect(doneParticipants.value).toHaveLength(1);
+
+      resetAll();
+      // マスターには2人残っているので、セッションも2人に復元される
+      expect(participants.value).toHaveLength(masterParticipants.value.length);
+      expect(doneParticipants.value).toHaveLength(0);
+      // time がリセットされている
+      expect(participants.value.every((p) => p.time === 0)).toBe(true);
+    });
+
+    it("addTemporary はマスターに影響しないのだ", async () => {
+      const { masterParticipants, participants, add, addTemporary } = await loadUseParticipants();
+      add("Alice");
+      const masterCountBefore = masterParticipants.value.length;
+      addTemporary("ゲスト参加者");
+      expect(participants.value).toHaveLength(2);
+      expect(masterParticipants.value).toHaveLength(masterCountBefore);
+    });
+
+    it("removeTemporary はマスターに影響しないのだ", async () => {
+      const { masterParticipants, participants, add, removeTemporary } =
+        await loadUseParticipants();
+      add("Alice");
+      add("Bob");
+      const masterCountBefore = masterParticipants.value.length;
+      const id = participants.value[0].id;
+      removeTemporary(id);
+      expect(participants.value).toHaveLength(1);
+      expect(masterParticipants.value).toHaveLength(masterCountBefore);
+    });
+
+    it("マスター変更が localStorage に永続化されるのだ", async () => {
+      const { add } = await loadUseParticipants();
+      add("ずんだもん");
+
+      // watch は nextTick で実行されるため待つ
+      await nextTick();
+      const stored = localStorage.getItem("scrumtimer-participants");
+      expect(stored).not.toBeNull();
+      const parsed = JSON.parse(stored!);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toHaveLength(1);
+      expect(parsed[0].name).toBe("ずんだもん");
+    });
+
+    it("セッション操作（done/absent）が localStorage に書き込まれないのだ", async () => {
+      const { add, moveFirstToDone, markAbsent, participants } = await loadUseParticipants();
+      add("Alice");
+      add("Bob");
+      add("Charlie");
+
+      // watch が走るのを待つ
+      await nextTick();
+      const storedBefore = localStorage.getItem("scrumtimer-participants");
+
+      moveFirstToDone(10);
+      const lastId = participants.value[participants.value.length - 1].id;
+      markAbsent(lastId);
+
+      await nextTick();
+      // localStorage はマスターのみ保存するので、done/absent の移動は反映されない
+      const storedAfter = localStorage.getItem("scrumtimer-participants");
+      expect(storedAfter).toBe(storedBefore);
+    });
   });
 });

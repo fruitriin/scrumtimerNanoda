@@ -36,3 +36,18 @@
 - `src/composables/useTimer.test.ts`（追加）
 - `src/composables/useParticipants.test.ts`（追加）
 - `src/composables/useSettings.test.ts`（追加）
+
+## 実装結果
+
+- useAudio: 7テスト新規作成（MockAudio class でモック、トラック生成・play呼び出し・音量/ミュート同期）
+- useTimer: applyTimerState 3テスト追加 + Audio モック追加でコンソールノイズ解消
+- useParticipants: マスター/セッション分離 6テスト追加（addTemporary/removeTemporary含む、nextTick でlocalStorage永続化検証）
+- useSettings: alerts 3テスト追加
+- 合計: 31 → 50 テスト（+19テスト）
+- 完了日: 2026-03-28
+
+### レビュー記録（Low/Suggestion）
+- S-1: トラックインデックスのマジックナンバー → TRACK_NAMES の順序変更時に注意
+- S-2: playWrapUp/playOvertime10/playOvertime30 は未テスト → 必要に応じて追加
+- S-3: removeTemporary テストの ID 取得元 → participants で正しいが明示コメント検討
+- S-4: vi.setSystemTime と vi.advanceTimersByTime の使い分けコメント検討

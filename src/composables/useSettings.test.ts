@@ -32,4 +32,32 @@ describe("useSettings", () => {
     expect(settings.value.globalMaxTime).toBe(900);
     expect(settings.value.useGlobalMaxTime).toBe(true);
   });
+
+  describe("alerts 設定", () => {
+    it("デフォルトで全アラートが有効なのだ", async () => {
+      const { settings } = await loadUseSettings();
+      expect(settings.value.alerts.wrapUp).toBe(true);
+      expect(settings.value.alerts.timeup).toBe(true);
+      expect(settings.value.alerts.overtime10).toBe(true);
+      expect(settings.value.alerts.overtime30).toBe(true);
+    });
+
+    it("個別にアラートを OFF にできるのだ", async () => {
+      const { settings, updateSettings } = await loadUseSettings();
+      updateSettings({ alerts: { ...settings.value.alerts, wrapUp: false } });
+      expect(settings.value.alerts.wrapUp).toBe(false);
+      // 他のアラートは影響なし
+      expect(settings.value.alerts.timeup).toBe(true);
+      expect(settings.value.alerts.overtime10).toBe(true);
+      expect(settings.value.alerts.overtime30).toBe(true);
+    });
+
+    it("個別にアラートを ON に戻せるのだ", async () => {
+      const { settings, updateSettings } = await loadUseSettings();
+      updateSettings({ alerts: { ...settings.value.alerts, timeup: false } });
+      expect(settings.value.alerts.timeup).toBe(false);
+      updateSettings({ alerts: { ...settings.value.alerts, timeup: true } });
+      expect(settings.value.alerts.timeup).toBe(true);
+    });
+  });
 });

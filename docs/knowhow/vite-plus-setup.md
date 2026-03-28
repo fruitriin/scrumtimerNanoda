@@ -175,6 +175,51 @@ describe("useSettings", () => {
 Vue コンポーネントコンテキスト外（テスト等）で警告が出る。
 クリーンアップは呼び出し元コンポーネントの責務にする。
 
+### jsdom 環境での HTMLAudioElement モック
+
+jsdom では `HTMLMediaElement.prototype.play` が未実装で `Error: Not implemented` を投げる。
+`Audio` を使う composable やそれに依存する composable のテストではモックが必須。
+
+```typescript
+beforeEach(() => {
+  // 1. prototype レベルで play をモック
+  HTMLMediaElement.prototype.play = vi.fn(() => Promise.resolve());
+  // 2. Audio コンストラクタを class 構文でモック（vi.fn() は new できない）
+  vi.stubGlobal("Audio", class {
+    play = vi.fn(() => Promise.resolve());
+    preload = "";
+    currentTime = 0;
+    volume = 1;
+    muted = false;
+    src = "";
+  });
+});
+```
+
+**重要**: `vi.fn(() => ...)` は `new` で呼べない（`TypeError: ... is not a constructor`）。
+`class` 構文で定義すること。
+
+**間接依存にも注意**: `useTimer` は内部で `useAudio` を import する。
+`useTimer.test.ts` でも Audio モックを入れないと、コンソールに `Not implemented` エラーが
+大量に出力され、実際のエラーがノイズに埋もれる。
+
+### Vue watch の非同期テスト
+
+`watch` による localStorage 永続化は `nextTick` で実行される。
+テストで `watch` の結果を確認するには `await nextTick()` が必要:
+
+```typescript
+import { nextTick } from "vue";
+
+it("マスター変更が localStorage に永続化される", async () => {
+  const { add } = await loadUseParticipants();
+  add("ずんだもん");
+  await nextTick(); // watch が走るのを待つ
+  const stored = localStorage.getItem("scrumtimer-participants");
+  expect(stored).not.toBeNull();
+});
+```
+
 ## 注意点・制約
 
 - Vite+ はアルファ段階（2026-03 時点）。peer dependency 警告が出るが動作には影響なし

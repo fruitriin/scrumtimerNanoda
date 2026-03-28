@@ -5,6 +5,19 @@ describe("useTimer", () => {
     localStorage.clear();
     vi.resetModules();
     vi.useFakeTimers();
+    // useAudio 内の Audio コンストラクタをモック（jsdom の play() 未実装対策）
+    HTMLMediaElement.prototype.play = vi.fn(() => Promise.resolve());
+    vi.stubGlobal(
+      "Audio",
+      class {
+        play = vi.fn(() => Promise.resolve());
+        preload = "";
+        currentTime = 0;
+        volume = 1;
+        muted = false;
+        src = "";
+      },
+    );
   });
 
   afterEach(() => {
@@ -82,5 +95,65 @@ describe("useTimer", () => {
     const { individualMaxTime } = await setup();
     // 3 人で 300 秒 → 100 秒/人
     expect(individualMaxTime.value).toBe(100);
+  });
+
+  describe("applyTimerState", () => {
+    it("isRunning: true で startedAt を渡すと currentElapsed が計算されるのだ", async () => {
+      const { applyTimerState, isRunning, currentElapsed, totalElapsed } = await setup();
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      applyTimerState({
+        isRunning: true,
+        startedAt: now - 5000, // 5秒前に開始
+        totalElapsed: 30,
+      });
+
+      expect(isRunning.value).toBe(true);
+      expect(currentElapsed.value).toBe(5);
+      expect(totalElapsed.value).toBe(30);
+    });
+
+    it("isRunning: false のとき interval が開始されないのだ", async () => {
+      const { applyTimerState, isRunning, currentElapsed } = await setup();
+
+      applyTimerState({
+        isRunning: false,
+        startedAt: null,
+        totalElapsed: 0,
+      });
+
+      expect(isRunning.value).toBe(false);
+      expect(currentElapsed.value).toBe(0);
+
+      // 時間が進んでも currentElapsed は変わらない
+      vi.advanceTimersByTime(3000);
+      expect(currentElapsed.value).toBe(0);
+    });
+
+    it("既存の interval を停止して新しい状態を適用するのだ", async () => {
+      const { start, applyTimerState, isRunning, currentElapsed } = await setup();
+      const now = Date.now();
+      vi.setSystemTime(now);
+
+      // まずスタートして interval を動かす
+      start();
+      vi.advanceTimersByTime(3000);
+      vi.setSystemTime(now + 3000);
+
+      // applyTimerState で新しい状態に上書き
+      applyTimerState({
+        isRunning: false,
+        startedAt: null,
+        totalElapsed: 10,
+      });
+
+      expect(isRunning.value).toBe(false);
+      expect(currentElapsed.value).toBe(0);
+
+      // interval が停止しているので進まない
+      vi.advanceTimersByTime(5000);
+      expect(currentElapsed.value).toBe(0);
+    });
   });
 });
