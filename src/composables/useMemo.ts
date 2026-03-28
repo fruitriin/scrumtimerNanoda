@@ -41,8 +41,6 @@ function loadTodayMemo(): DailyMemo {
 /** モジュールスコープでシングルトン化 */
 const myMemo = ref<DailyMemo>(loadTodayMemo());
 const publicMemos = ref<Map<string, PublicMemoPayload>>(new Map());
-const selectedDate = ref(todayKey());
-
 // localStorage に自動永続化（myMemo 変更時）
 watch(
   myMemo,
@@ -130,7 +128,6 @@ export function useMemo() {
   return {
     myMemo,
     publicMemos,
-    selectedDate,
     updatePublicMemo,
     updatePrivateMemo,
     clearMemo,

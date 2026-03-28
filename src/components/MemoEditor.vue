@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useEditor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import { useMemo } from "../composables/useMemo";
@@ -23,6 +23,25 @@ const privateEditor = useEditor({
     updatePrivateMemo(editor.getHTML());
   },
 });
+
+// 外部からメモが更新された場合（ルーム同期など）にエディタを同期
+watch(
+  () => myMemo.value.publicContent,
+  (newContent) => {
+    if (publicEditor.value && publicEditor.value.getHTML() !== newContent) {
+      publicEditor.value.commands.setContent(newContent, false);
+    }
+  },
+);
+
+watch(
+  () => myMemo.value.privateContent,
+  (newContent) => {
+    if (privateEditor.value && privateEditor.value.getHTML() !== newContent) {
+      privateEditor.value.commands.setContent(newContent, false);
+    }
+  },
+);
 </script>
 
 <template>
