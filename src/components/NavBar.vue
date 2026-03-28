@@ -9,16 +9,31 @@ const navItems = [
 </script>
 
 <template>
-  <nav class="bg-emerald-600 text-white px-4 py-3 flex items-center gap-4">
-    <h1 class="text-lg font-bold mr-auto">ScrumTimer なのだ！</h1>
-    <router-link
-      v-for="item in navItems"
-      :key="item.to"
-      :to="item.to"
-      class="px-3 py-1 rounded hover:bg-emerald-700 transition-colors"
-      exact-active-class="bg-emerald-800"
-    >
-      {{ item.label }}
-    </router-link>
+  <nav
+    aria-label="メインナビゲーション"
+    class="bg-emerald-600 text-white px-2 sm:px-4 py-3 flex items-center gap-2 sm:gap-4"
+  >
+    <h1 class="text-lg font-bold mr-auto whitespace-nowrap">ScrumTimer なのだ！</h1>
+    <div class="flex gap-1 sm:gap-2 overflow-x-auto nav-scroll">
+      <router-link
+        v-for="item in navItems"
+        :key="item.to"
+        :to="item.to"
+        class="px-2 sm:px-3 py-1.5 rounded hover:bg-emerald-700 transition-colors whitespace-nowrap text-sm sm:text-base min-h-[44px] flex items-center"
+        exact-active-class="bg-emerald-800"
+      >
+        {{ item.label }}
+      </router-link>
+    </div>
   </nav>
 </template>
+
+<style scoped>
+.nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+.nav-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

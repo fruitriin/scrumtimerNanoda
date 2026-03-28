@@ -92,6 +92,7 @@ async function copyRoomUrl() {
           v-model="joinId"
           type="text"
           placeholder="ルーム ID を入力"
+          aria-label="ルーム ID"
           class="flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           @keydown.enter="handleJoin"
         />
@@ -108,8 +109,8 @@ async function copyRoomUrl() {
     <div v-else>
       <div class="flex items-center gap-3 mb-3">
         <!-- 接続状態インジケーター -->
-        <span class="inline-flex items-center gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full" :class="statusColor" />
+        <span role="status" class="inline-flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full" :class="statusColor" aria-hidden="true" />
           <span class="text-sm text-gray-600">{{ statusLabel }}</span>
         </span>
 
@@ -128,6 +129,7 @@ async function copyRoomUrl() {
         </span>
         <button
           class="px-3 py-1 text-sm bg-gray-200 rounded hover:bg-gray-300"
+          aria-label="ルームURLをクリップボードにコピー"
           @click="copyRoomUrl"
         >
           📋 URL コピー
@@ -141,7 +143,7 @@ async function copyRoomUrl() {
       </div>
 
       <!-- エラーメッセージ -->
-      <div v-if="errorMessage" class="mt-2 text-sm text-red-500">
+      <div v-if="errorMessage" role="alert" class="mt-2 text-sm text-red-500">
         {{ errorMessage }}
       </div>
     </div>

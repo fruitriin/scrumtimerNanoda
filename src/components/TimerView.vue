@@ -127,7 +127,7 @@ function handleRemoveTemporary(id: string) {
 </script>
 
 <template>
-  <div class="p-4 max-w-5xl mx-auto">
+  <div class="p-2 sm:p-4 max-w-5xl mx-auto">
     <!-- 参加者がいない場合 -->
     <div v-if="!hasParticipants" class="text-center py-12">
       <h2 class="text-2xl font-bold mb-4">参加者がいないのだ！</h2>
@@ -145,7 +145,14 @@ function handleRemoveTemporary(id: string) {
       <!-- 全体進捗 -->
       <section class="mb-4">
         <h4 class="text-sm font-semibold text-gray-500 mb-1">全体進捗</h4>
-        <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+        <div
+          role="progressbar"
+          :aria-valuenow="totalPercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-label="全体進捗"
+          class="w-full bg-gray-200 rounded-full h-6 overflow-hidden"
+        >
           <div
             class="h-full rounded-full transition-all duration-300 flex items-center justify-center text-white text-xs font-bold bg-emerald-500"
             :style="{ width: totalPercent + '%' }"
@@ -158,7 +165,15 @@ function handleRemoveTemporary(id: string) {
       <!-- 全体時間 -->
       <section v-if="settings.useGlobalMaxTime" class="mb-4">
         <h4 class="text-sm font-semibold text-gray-500 mb-1">全体時間</h4>
-        <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+        <div
+          role="progressbar"
+          :aria-valuenow="totalTimePercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-label="全体時間"
+          :aria-valuetext="formatTime(totalRemainingTime) + ' 残り'"
+          class="w-full bg-gray-200 rounded-full h-6 overflow-hidden"
+        >
           <div
             class="h-full rounded-full transition-all duration-300 flex items-center justify-center text-white text-xs font-bold"
             :class="[progressColor(totalTimePercent), { 'animate-pulse': totalTimePercent >= 95 }]"
@@ -188,7 +203,15 @@ function handleRemoveTemporary(id: string) {
             {{ formatTime(currentRemainingTime) }}
           </span>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-10 overflow-hidden">
+        <div
+          role="progressbar"
+          :aria-valuenow="currentPercent"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-label="currentParticipant ? currentParticipant.name + 'の発表時間' : '発表時間'"
+          :aria-valuetext="formatTime(currentRemainingTime) + ' 残り'"
+          class="w-full bg-gray-200 rounded-full h-10 overflow-hidden"
+        >
           <div
             class="h-full rounded-full transition-all duration-300 flex items-center justify-center text-white font-bold"
             :class="[progressColor(currentPercent), { 'animate-pulse': currentPercent >= 95 }]"
@@ -230,17 +253,19 @@ function handleRemoveTemporary(id: string) {
             }"
           >
             <button
-              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs"
+              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs min-w-[28px] min-h-[28px] sm:min-w-0 sm:min-h-0"
               :disabled="participants.length <= 2 || (i === 0 && isRunning)"
               title="不在にする"
+              :aria-label="p.name + 'を不在にする'"
               @click="handleMarkAbsent(p.id)"
             >
               ⊖
             </button>
             <button
-              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs"
+              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs min-w-[28px] min-h-[28px] sm:min-w-0 sm:min-h-0"
               :disabled="i === 0 && isRunning"
               title="この回から削除"
+              :aria-label="p.name + 'をこの回から削除'"
               @click="handleRemoveTemporary(p.id)"
             >
               ✕
@@ -259,8 +284,9 @@ function handleRemoveTemporary(id: string) {
             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-red-50 text-gray-400"
           >
             <button
-              class="text-gray-400 hover:text-emerald-500 text-xs"
+              class="text-gray-400 hover:text-emerald-500 text-xs min-w-[28px] min-h-[28px] sm:min-w-0 sm:min-h-0"
               title="出席に戻す"
+              :aria-label="ap.name + 'を出席に戻す'"
               @click="handleMarkPresent(ap.id)"
             >
               ⊕
@@ -274,6 +300,7 @@ function handleRemoveTemporary(id: string) {
             v-model="newParticipantName"
             type="text"
             placeholder="参加者を追加"
+            aria-label="参加者名を入力"
             class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
           />
           <button

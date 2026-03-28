@@ -32,8 +32,9 @@ function toggleAlert(key: keyof typeof settings.value.alerts) {
     <!-- 音量 + ミュート + テスト -->
     <div class="flex items-center gap-2">
       <button
-        class="w-7 h-7 flex items-center justify-center rounded hover:bg-gray-200 text-sm"
+        class="w-10 h-10 sm:w-7 sm:h-7 flex items-center justify-center rounded hover:bg-gray-200 text-sm"
         :title="settings.muted ? 'ミュート解除' : 'ミュート'"
+        :aria-label="settings.muted ? 'ミュート解除' : 'ミュート'"
         @click="toggleMute"
       >
         <span v-if="settings.muted || settings.volume === 0">&#x1F507;</span>
@@ -46,14 +47,16 @@ function toggleAlert(key: keyof typeof settings.value.alerts) {
         type="range"
         min="0"
         max="100"
+        aria-label="音量"
         class="flex-1 h-1.5 accent-emerald-500"
         :disabled="settings.muted"
       />
       <span class="text-xs text-gray-400 w-8 text-right">{{ volumeModel }}%</span>
 
       <button
-        class="px-2 py-0.5 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:opacity-40"
+        class="px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600 disabled:opacity-40 min-h-[44px] sm:min-h-0"
         :disabled="settings.muted"
+        aria-label="音声テスト再生"
         @click="playTimeup"
       >
         &#x25B6; テスト
