@@ -26,6 +26,19 @@
 |---|---|---|
 | [vite-plus-setup.md](vite-plus-setup.md) | Vite+ の統合ツールチェーン思想、composables シングルトンテストパターン、jsdom Audio モック（class構文必須）、Vue watch の nextTick テスト | Vite+, vp, Oxlint, Oxfmt, tsgolint, vite.config.ts一元化, composable, シングルトン, jsdom, Audio, モック, HTMLMediaElement, nextTick, watch, localStorage |
 
+## Vue 3・フロントエンド
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [vue-coding-patterns.md](vue-coding-patterns.md) | defineAsyncComponent バンドル分割、ref<Map> リアクティビティ、Tiptap 外部同期、DOMPurify XSS対策、ARIA アクセシビリティパターン | defineAsyncComponent, バンドル分割, Map, リアクティビティ, Tiptap, setContent, DOMPurify, XSS, v-html, ARIA, progressbar, role |
+
+## 品質ゲート・開発プロセス
+
+| ファイル | 要約 | キーワード |
+|---|---|---|
+| [quality-gate-patterns.md](quality-gate-patterns.md) | Stage 2 並列起動、code-review-agent の検出力（XSS・リアクティビティ・テストノイズ）、Warning 修正フロー | Stage2, 並列, code-review-agent, contribution-agent, Critical, Warning, Suggestion, バックグラウンド |
+| [task-completion-patterns.md](task-completion-patterns.md) | dev-loop サイクル時間見積もり、タスク選択優先順位、品質計画自動生成、完了処理チェックリスト、knowhow 記録タイミング | dev-loop, タスク選択, 複利効果, 完了処理, knowhow記録, コンパクション |
+
 ## Claude Code 設定・運用
 
 | ファイル | 要約 | キーワード |
