@@ -92,3 +92,14 @@ export async function getAbsentParticipants(page: Page): Promise<string[]> {
 export async function waitForSync(page: Page, ms = 1000) {
   await page.waitForTimeout(ms);
 }
+
+/** ホストの PeerJS 接続を破棄してゲスト側に切断を検知させる */
+export async function disconnectHost(page: Page) {
+  await page.evaluate(() => {
+    const w = window as unknown as Record<string, unknown>;
+    const cleanup = w.__useRoom_cleanup__ as (() => void) | undefined;
+    if (cleanup) cleanup();
+  });
+  // WebRTC の close イベントがリモート側に伝播するまで待機
+  await page.waitForTimeout(3000);
+}

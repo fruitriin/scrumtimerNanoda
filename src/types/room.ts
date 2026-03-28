@@ -29,11 +29,11 @@ export type TimekeepEvent =
 
 /** ルーム内メッセージ */
 export type RoomMessage =
-  | { type: "sync"; state: SyncState }
+  | { type: "sync"; state: SyncState; peerList: string[]; generation: number }
   | { type: "action"; action: TimerAction }
   | { type: "peer-joined"; count: number }
   | { type: "peer-left"; count: number }
   | { type: "timekeep"; event: TimekeepEvent };
 
 /** 接続状態 */
-export type ConnectionStatus = "disconnected" | "connecting" | "connected";
+export type ConnectionStatus = "disconnected" | "connecting" | "connected" | "migrating";

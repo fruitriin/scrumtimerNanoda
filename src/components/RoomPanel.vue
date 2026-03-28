@@ -26,6 +26,8 @@ const statusLabel = computed(() => {
       return "接続済み";
     case "connecting":
       return "接続中...";
+    case "migrating":
+      return "ホスト移行中...";
     case "disconnected":
       return "未接続";
   }
@@ -37,6 +39,8 @@ const statusColor = computed(() => {
       return "bg-emerald-500";
     case "connecting":
       return "bg-yellow-500 animate-pulse";
+    case "migrating":
+      return "bg-orange-500 animate-pulse";
     case "disconnected":
       return "bg-gray-400";
   }

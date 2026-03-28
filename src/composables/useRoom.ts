@@ -10,6 +10,8 @@ const PEER_ID_PREFIX = "scrum-nanoda-";
 const RECONNECT_ATTEMPTS = 3;
 const RECONNECT_BASE_DELAY = 1000;
 const MAX_ID_RETRY = 3;
+const MIGRATION_DELAY = 2000;
+const MAX_GENERATION = 3;
 
 /** モジュールスコープでシングルトン化 */
 const roomId = ref<string | null>(null);
@@ -23,6 +25,17 @@ let connections: DataConnection[] = [];
 let hostConnection: DataConnection | null = null;
 let reconnectAttempts = 0;
 let idRetryCount = 0;
+
+/** ホストマイグレーション用状態 */
+let generation = 0;
+let peerList: string[] = [];
+let myPeerId: string | null = null;
+let lastSyncState: SyncState | null = null;
+
+/** 世代に対応する Peer ID を生成 */
+function hostPeerId(id: string, gen: number): string {
+  return gen === 0 ? PEER_ID_PREFIX + id : `${PEER_ID_PREFIX}${id}-g${gen}`;
+}
 
 /** 受信データが RoomMessage かどうかを検証する型ガード */
 function isRoomMessage(data: unknown): data is RoomMessage {
@@ -38,6 +51,7 @@ function isRoomMessage(data: unknown): data is RoomMessage {
  * WebRTC ルーム同期 composable（モジュールスコープでシングルトン化）
  *
  * スター型トポロジー: ホストが状態を管理し、ゲストは操作をホストに送信。
+ * ホスト切断時はゲストの中から決定論的に新ホストを選出し、自動で引き継ぐ。
  *
  * 同期タイミング: 開始・ターン交代・全員終了・途中参加の fetch のみ。
  * currentElapsed は startedAt から各クライアントが冪等に計算する。
@@ -91,7 +105,13 @@ export function useRoom() {
 
   /** 状態をブロードキャスト（ホスト） */
   function broadcastState() {
-    broadcast({ type: "sync", state: getStateSnapshot() });
+    const currentPeerList = connections.filter((c) => c.open).map((c) => c.peer);
+    broadcast({
+      type: "sync",
+      state: getStateSnapshot(),
+      peerList: currentPeerList,
+      generation,
+    });
   }
 
   /** アクションを実行（ホスト側で実際の操作を行う） */
@@ -142,6 +162,9 @@ export function useRoom() {
     switch (data.type) {
       case "sync":
         applyState(data.state);
+        lastSyncState = data.state;
+        peerList = data.peerList;
+        generation = data.generation;
         break;
       case "peer-joined":
       case "peer-left":
@@ -156,8 +179,14 @@ export function useRoom() {
 
     conn.on("open", () => {
       connectedPeers.value = connections.filter((c) => c.open).length;
-      // 途中参加: 現在の全状態を送信
-      void conn.send({ type: "sync", state: getStateSnapshot() } satisfies RoomMessage);
+      // 途中参加: 現在の全状態を送信（peerList/generation 込み）
+      const currentPeerList = connections.filter((c) => c.open).map((c) => c.peer);
+      void conn.send({
+        type: "sync",
+        state: getStateSnapshot(),
+        peerList: currentPeerList,
+        generation,
+      } satisfies RoomMessage);
       broadcast({ type: "peer-joined", count: connectedPeers.value });
     });
 
@@ -178,17 +207,9 @@ export function useRoom() {
     });
   }
 
-  /** ルームを作成する（ホスト） */
-  function createRoom(): string {
-    cleanup();
-    idRetryCount = 0;
-    const id = nanoid(8);
-    roomId.value = id;
-    isHost.value = true;
-    connectionStatus.value = "connecting";
-    errorMessage.value = null;
-
-    peer = new Peer(PEER_ID_PREFIX + id);
+  /** ホストのイベントハンドラーを登録する共通処理 */
+  function setupHostPeerEvents() {
+    if (!peer) return;
 
     peer.on("open", () => {
       connectionStatus.value = "connected";
@@ -212,6 +233,21 @@ export function useRoom() {
       connectionStatus.value = "disconnected";
       errorMessage.value = "シグナリングサーバーから切断されたのだ";
     });
+  }
+
+  /** ルームを作成する（ホスト） */
+  function createRoom(): string {
+    cleanup();
+    idRetryCount = 0;
+    generation = 0;
+    const id = nanoid(8);
+    roomId.value = id;
+    isHost.value = true;
+    connectionStatus.value = "connecting";
+    errorMessage.value = null;
+
+    peer = new Peer(hostPeerId(id, 0));
+    setupHostPeerEvents();
 
     return id;
   }
@@ -227,16 +263,24 @@ export function useRoom() {
 
     peer = new Peer();
 
-    peer.on("open", () => {
-      connectToHost(targetRoomId);
+    peer.on("open", (id) => {
+      myPeerId = id;
+      connectToHost(targetRoomId, 0);
     });
 
     peer.on("error", (err) => {
       console.error("PeerJS エラーなのだ:", err);
-      errorMessage.value = `接続エラー: ${err.type}`;
       if (err.type === "peer-unavailable") {
-        errorMessage.value = "ルームが見つからないのだ";
-        connectionStatus.value = "disconnected";
+        // 途中参加プローブ: 次の世代を試行
+        const nextGen = (probeGeneration ?? 0) + 1;
+        if (nextGen <= MAX_GENERATION) {
+          connectToHost(targetRoomId, nextGen);
+        } else {
+          errorMessage.value = "ルームが見つからないのだ";
+          connectionStatus.value = "disconnected";
+        }
+      } else {
+        errorMessage.value = `接続エラー: ${err.type}`;
       }
     });
 
@@ -246,15 +290,21 @@ export function useRoom() {
     });
   }
 
+  /** 現在プローブ中の世代（途中参加プローブ用） */
+  let probeGeneration: number | null = null;
+
   /** ホストに接続（ゲスト） */
-  function connectToHost(targetRoomId: string) {
+  function connectToHost(targetRoomId: string, gen = 0) {
     if (!peer) return;
-    const conn = peer.connect(PEER_ID_PREFIX + targetRoomId, { reliable: true });
+    probeGeneration = gen;
+    const targetPeerId = hostPeerId(targetRoomId, gen);
+    const conn = peer.connect(targetPeerId, { reliable: true });
     hostConnection = conn;
 
     conn.on("open", () => {
       connectionStatus.value = "connected";
       reconnectAttempts = 0;
+      probeGeneration = null;
     });
 
     conn.on("data", (data) => {
@@ -262,15 +312,88 @@ export function useRoom() {
     });
 
     conn.on("close", () => {
-      connectionStatus.value = "disconnected";
       hostConnection = null;
-      errorMessage.value = "ホストが切断されたのだ。ローカルモードで継続するのだ。";
+      attemptHostMigration();
     });
 
     conn.on("error", (err) => {
       console.error("ホスト接続エラーなのだ:", err);
       errorMessage.value = `ホスト接続エラー: ${err.type}`;
     });
+  }
+
+  /** ホストマイグレーションを試行（ゲスト） */
+  function attemptHostMigration() {
+    if (peerList.length === 0 || generation >= MAX_GENERATION) {
+      // マイグレーション不可: ローカルモードにフォールバック
+      connectionStatus.value = "disconnected";
+      errorMessage.value = "ホストが切断されたのだ。ローカルモードで継続するのだ。";
+      return;
+    }
+
+    connectionStatus.value = "migrating";
+    errorMessage.value = null;
+    const newGeneration = generation + 1;
+
+    if (peerList[0] === myPeerId) {
+      // 自分が新ホスト
+      becomeHost(newGeneration);
+    } else {
+      // 別のゲストが新ホスト → 待機してから再接続
+      reconnectToNewHost(newGeneration);
+    }
+  }
+
+  /** ゲストから新ホストに昇格する */
+  function becomeHost(newGeneration: number) {
+    // 古い peer を破棄
+    if (peer) {
+      peer.destroy();
+      peer = null;
+    }
+    hostConnection = null;
+
+    isHost.value = true;
+    generation = newGeneration;
+    connections = [];
+    connectedPeers.value = 0;
+
+    const id = roomId.value;
+    if (!id) return;
+
+    peer = new Peer(hostPeerId(id, newGeneration));
+
+    peer.on("open", () => {
+      connectionStatus.value = "connected";
+      // 状態はローカルに保持済み（lastSyncState 経由で適用済み）
+    });
+
+    peer.on("connection", (conn) => {
+      handleNewConnection(conn);
+    });
+
+    peer.on("error", (err) => {
+      console.error("ホスト昇格エラーなのだ:", err);
+      errorMessage.value = `ホスト昇格エラー: ${err.type}`;
+      connectionStatus.value = "disconnected";
+    });
+
+    peer.on("disconnected", () => {
+      connectionStatus.value = "disconnected";
+      errorMessage.value = "シグナリングサーバーから切断されたのだ";
+    });
+  }
+
+  /** 新ホストへの再接続を待機・試行する（ゲスト） */
+  function reconnectToNewHost(newGeneration: number) {
+    const id = roomId.value;
+    if (!id) return;
+
+    setTimeout(() => {
+      if (connectionStatus.value !== "migrating") return;
+      generation = newGeneration;
+      connectToHost(id, newGeneration);
+    }, MIGRATION_DELAY);
   }
 
   /** 再接続を試行（ゲスト） */
@@ -284,7 +407,7 @@ export function useRoom() {
     setTimeout(() => {
       if (connectionStatus.value === "disconnected" && roomId.value) {
         connectionStatus.value = "connecting";
-        connectToHost(targetRoomId);
+        connectToHost(targetRoomId, generation);
       }
     }, delay);
   }
@@ -313,6 +436,11 @@ export function useRoom() {
       peer = null;
     }
     connectedPeers.value = 0;
+    generation = 0;
+    peerList = [];
+    myPeerId = null;
+    lastSyncState = null;
+    probeGeneration = null;
   }
 
   /** ルームから退出 */
@@ -322,6 +450,11 @@ export function useRoom() {
     isHost.value = false;
     connectionStatus.value = "disconnected";
     errorMessage.value = null;
+  }
+
+  // テスト用: ホスト切断をシミュレートするためのグローバル公開
+  if (typeof window !== "undefined") {
+    (window as unknown as Record<string, unknown>).__useRoom_cleanup__ = cleanup;
   }
 
   return {
