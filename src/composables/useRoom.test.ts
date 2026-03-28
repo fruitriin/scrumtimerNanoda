@@ -84,6 +84,8 @@ describe("useRoom", () => {
         startedAt: null,
         totalElapsed: 0,
       },
+      peerList: [],
+      generation: 0,
     };
     expect(syncMsg.type).toBe("sync");
 

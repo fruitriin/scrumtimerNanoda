@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const navItems = [
-  { to: "/", label: "タイマー(一人)" },
-  { to: "/room", label: "タイマー(ルーム)" },
+  { to: "/", label: "タイマー(一人で進行)" },
+  { to: "/room", label: "タイマー(誰でもで進行)" },
   { to: "/participants", label: "参加者" },
   { to: "/settings", label: "設定" },
   { to: "/help", label: "ヘルプ" },

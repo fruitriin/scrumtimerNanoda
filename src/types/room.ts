@@ -18,7 +18,9 @@ export type TimerAction =
   | { kind: "reset" }
   | { kind: "markAbsent"; participantId: string }
   | { kind: "markPresent"; participantId: string }
-  | { kind: "shuffle" };
+  | { kind: "shuffle" }
+  | { kind: "addParticipant"; name: string }
+  | { kind: "removeParticipant"; participantId: string };
 
 /** タイムキープ通知（0004 VoiceVox で使用予定） */
 export type TimekeepEvent =

@@ -57,18 +57,18 @@ function isRoomMessage(data: unknown): data is RoomMessage {
  * currentElapsed は startedAt から各クライアントが冪等に計算する。
  */
 export function useRoom() {
-  const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
-    useParticipants();
   const {
-    isRunning,
-    totalElapsed,
-    start,
-    stop,
-    next,
-    reset,
-    getStartedAt,
-    applyTimerState,
-  } = useTimer();
+    participants,
+    doneParticipants,
+    absentParticipants,
+    markAbsent,
+    markPresent,
+    shuffle,
+    addTemporary,
+    removeTemporary,
+  } = useParticipants();
+  const { isRunning, totalElapsed, start, stop, next, reset, getStartedAt, applyTimerState } =
+    useTimer();
 
   /** 現在の状態をスナップショットとして取得 */
   function getStateSnapshot(): SyncState {
@@ -137,6 +137,12 @@ export function useRoom() {
         break;
       case "shuffle":
         shuffle(isRunning.value);
+        break;
+      case "addParticipant":
+        addTemporary(action.name);
+        break;
+      case "removeParticipant":
+        removeTemporary(action.participantId);
         break;
     }
     broadcastState();

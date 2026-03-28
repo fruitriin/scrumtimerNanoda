@@ -114,7 +114,17 @@ export function useParticipants() {
     absentParticipants.value = [];
   }
 
-  // --- タイマーセッション操作 ---
+  // --- タイマーセッション操作（その場限り・masterに影響しない） ---
+
+  /** セッション限りで参加者を追加（masterには保存しない） */
+  function addTemporary(name: string) {
+    participants.value.push(createParticipant(name));
+  }
+
+  /** セッション限りで参加者を削除（masterには影響しない） */
+  function removeTemporary(id: string) {
+    participants.value = participants.value.filter((p) => p.id !== id);
+  }
 
   /** Fisher-Yates シャッフル（発表中の先頭は固定、残りのみシャッフル） */
   function shuffle(keepFirst = false) {
@@ -171,6 +181,8 @@ export function useParticipants() {
     markAbsent,
     markPresent,
     resetAll,
+    addTemporary,
+    removeTemporary,
     moveFirstToDone,
     exportToJSON,
     importFromJSON,

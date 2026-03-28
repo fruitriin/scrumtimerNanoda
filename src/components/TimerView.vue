@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { ref, computed } from "vue";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";
 import { useSettings } from "../composables/useSettings";
@@ -22,8 +22,16 @@ const {
   reset,
 } = useTimer();
 
-const { participants, doneParticipants, absentParticipants, markAbsent, markPresent, shuffle } =
-  useParticipants();
+const {
+  participants,
+  doneParticipants,
+  absentParticipants,
+  markAbsent,
+  markPresent,
+  shuffle,
+  addTemporary,
+  removeTemporary,
+} = useParticipants();
 const { settings } = useSettings();
 const { roomId, sendAction } = useRoom();
 
@@ -81,6 +89,21 @@ function handleMarkPresent(id: string) {
   if (roomId.value) sendAction({ kind: "markPresent", participantId: id });
   else markPresent(id);
 }
+
+const newParticipantName = ref("");
+
+function handleAddTemporary() {
+  const name = newParticipantName.value.trim();
+  if (!name) return;
+  if (roomId.value) sendAction({ kind: "addParticipant", name });
+  else addTemporary(name);
+  newParticipantName.value = "";
+}
+
+function handleRemoveTemporary(id: string) {
+  if (roomId.value) sendAction({ kind: "removeParticipant", participantId: id });
+  else removeTemporary(id);
+}
 </script>
 
 <template>
@@ -132,7 +155,16 @@ function handleMarkPresent(id: string) {
           <h4 class="text-sm font-bold text-gray-700">
             {{ currentParticipant ? currentParticipant.name : "—" }}
           </h4>
-          <span class="text-lg font-mono font-bold" :class="[currentPercent >= 95 ? 'text-red-500' : currentPercent > 75 ? 'text-yellow-600' : 'text-emerald-600']">
+          <span
+            class="text-lg font-mono font-bold"
+            :class="[
+              currentPercent >= 95
+                ? 'text-red-500'
+                : currentPercent > 75
+                  ? 'text-yellow-600'
+                  : 'text-emerald-600',
+            ]"
+          >
             {{ formatTime(currentRemainingTime) }}
           </span>
         </div>
@@ -158,7 +190,10 @@ function handleMarkPresent(id: string) {
             class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-200 text-gray-500"
           >
             ✓ {{ dp.name }}
-            <span class="text-xs font-mono w-10 text-right" :class="{ 'text-red-500': dp.time >= individualMaxTime }">
+            <span
+              class="text-xs font-mono w-10 text-right"
+              :class="{ 'text-red-500': dp.time >= individualMaxTime }"
+            >
               {{ formatTime(dp.time) }}
             </span>
           </span>
@@ -182,8 +217,18 @@ function handleMarkPresent(id: string) {
             >
               ⊖
             </button>
+            <button
+              class="text-gray-400 hover:text-red-500 disabled:opacity-30 text-xs"
+              :disabled="i === 0 && isRunning"
+              title="この回から削除"
+              @click="handleRemoveTemporary(p.id)"
+            >
+              ✕
+            </button>
             {{ p.name }}
-            <span v-if="i === 0 && isRunning" class="text-xs font-mono w-10 text-right">{{ formatTime(currentElapsed) }}</span>
+            <span v-if="i === 0 && isRunning" class="text-xs font-mono w-10 text-right">{{
+              formatTime(currentElapsed)
+            }}</span>
             <span v-else class="text-xs text-gray-400 font-mono w-10 text-right">-</span>
           </span>
 
@@ -203,6 +248,22 @@ function handleMarkPresent(id: string) {
             {{ ap.name }}
           </span>
         </div>
+        <!-- その場限りの参加者追加 -->
+        <form class="mt-2 flex gap-1" @submit.prevent="handleAddTemporary">
+          <input
+            v-model="newParticipantName"
+            type="text"
+            placeholder="参加者を追加"
+            class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+          />
+          <button
+            type="submit"
+            class="px-3 py-1 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700 disabled:opacity-40"
+            :disabled="!newParticipantName.trim()"
+          >
+            追加
+          </button>
+        </form>
       </section>
 
       <!-- ボタン群 -->
@@ -229,7 +290,10 @@ function handleMarkPresent(id: string) {
         >
           ⏹ ストップ
         </button>
-        <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" @click="handleReset">
+        <button
+          class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          @click="handleReset"
+        >
           ↻ リセット
         </button>
         <button
