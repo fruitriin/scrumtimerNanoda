@@ -166,9 +166,21 @@ function resume() {
 - 既存の「ストップ」ボタンは廃止する（要件: 2つに整理）
 - 動作中に「会の終了」を押した場合も、確認後にリセットする
 
-**確認ダイアログの実装**: `<dialog>` 要素 or 既存パターン（プロジェクト内に確認ダイアログコンポーネントがあれば再利用）。なければ `window.confirm()` でも MVP として可。
+**確認ダイアログの実装**: `window.confirm()` を使う。
 
-→ **アクセシビリティ向上のため、HTML `<dialog>` ベースで自前コンポーネント `ConfirmDialog.vue` を新規作成する**（プロジェクトの 0012 アクセシビリティ計画と整合）。
+理由 (Feedback.md のアクセシビリティ方針に従う):
+- ネイティブブラウザ上での見栄え・挙動を一級扱いする方針
+- 確認ダイアログは一瞬しか表示されない補助 UI で、デザイン自作のコストに見合わない
+- `window.confirm()` はブラウザネイティブのフォーカス管理・ESC キャンセル・モーダルブロックを自動提供
+- 自前 `<dialog>` 要素を作るとフォーカストラップや ESC ハンドラを再実装するコストが発生し、メインタスクの主旨から外れる
+
+```ts
+function handleEnd() {
+  if (!window.confirm("会を終了するのだ？参加者の発表履歴はクリアされるのだ。")) return;
+  if (roomId.value) sendAction({ kind: "end" });
+  else end();
+}
+```
 
 ---
 
@@ -249,13 +261,11 @@ export type SyncState = {
 
 ### Phase 3: UI
 
-- [ ] 3.1 `src/components/ConfirmDialog.vue` — 新規。HTML `<dialog>` ベースの確認ダイアログ（タイトル・本文・OK/キャンセル）
-- [ ] 3.2 `src/components/ConfirmDialog.test.ts` — ダイアログのレンダリング・イベントテスト
-- [ ] 3.3 `src/components/TimerView.vue` — 既存「ストップ」ボタン削除、「リセット」を「会の終了」に改称し ConfirmDialog を組み込む
-- [ ] 3.4 `src/components/TimerView.vue` — 「一時停止/再開」ボタン追加（isRunning/isPaused で表示切替）
-- [ ] 3.5 `src/components/TimerView.vue` — 「前へ戻る」ボタン追加（doneParticipants.length === 0 で disabled）
-- [ ] 3.6 `src/components/TimerView.vue` — 時間調整ボタン群（-1m/-30s/+30s/+1m）追加。`isRunning || isPaused` のとき有効
-- [ ] 3.7 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleAdjustTime, handleEnd）。ルームモード時は sendAction 経由
+- [ ] 3.1 `src/components/TimerView.vue` — 既存「ストップ」ボタン削除、「リセット」を「会の終了」に改称。クリック時に `window.confirm()` で確認
+- [ ] 3.2 `src/components/TimerView.vue` — 「一時停止/再開」ボタン追加（isRunning/isPaused で表示切替）
+- [ ] 3.3 `src/components/TimerView.vue` — 「前へ戻る」ボタン追加（doneParticipants.length === 0 で disabled）
+- [ ] 3.4 `src/components/TimerView.vue` — 時間調整ボタン群（-1m/-30s/+30s/+1m）追加。`isRunning || isPaused` のとき有効
+- [ ] 3.5 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleAdjustTime, handleEnd）。ルームモード時は sendAction 経由
 
 ### Phase 4: E2E テスト
 
@@ -263,7 +273,7 @@ export type SyncState = {
   - 前へ戻る: 2人発表後に prev で 2人目に戻る → 元の done が空に近づく
   - 時間調整: +30秒で残り時間表示が増加、-1分で減少
   - 一時停止/再開: pause で経過時間が固定、resume で続きから増加
-  - 会の終了: 確認ダイアログでキャンセル → 状態保持。OK → 全リセット
+  - 会の終了: `page.on("dialog", d => d.dismiss())` でキャンセル → 状態保持。`d.accept()` で OK → 全リセット
 - [ ] 4.2 `e2e/room-sync.spec.ts` — 既存テストに pause / prev / adjustTime / end の同期シナリオを追加
 
 ### Phase 5: 検証
@@ -285,9 +295,7 @@ export type SyncState = {
 | `src/composables/useRoom.ts` | 拡張: 新規 TimerAction のディスパッチ |
 | `src/composables/useRoom.test.ts` | 拡張: sync メッセージ検証 |
 | `src/types/room.ts` | 拡張: TimerAction / SyncState 拡張 |
-| `src/components/TimerView.vue` | UI 改修: ボタン構成変更、確認ダイアログ統合 |
-| `src/components/ConfirmDialog.vue` | 新規: 確認ダイアログコンポーネント |
-| `src/components/ConfirmDialog.test.ts` | 新規: ダイアログユニットテスト |
+| `src/components/TimerView.vue` | UI 改修: ボタン構成変更、window.confirm 統合 |
 | `e2e/timer-controls.spec.ts` | 新規: 新機能の E2E |
 | `e2e/room-sync.spec.ts` | 拡張: 新アクションの同期検証 |
 
@@ -298,6 +306,6 @@ export type SyncState = {
 - **既存テストの後方互換性**: `TimerAction` の `stop` / `reset` は内部実装で残す（テストファイルが参照している可能性）。UI からの直接呼び出しは廃止
 - **音声フラグの再評価**: `adjustTime` で残り時間を増やしたら、既に再生済みのアラートを再発火可能にする（シンプル優先で全 false 戻し）
 - **prev の境界**: `doneParticipants.length === 0` のときボタン disabled。動作中も含めて押せるようにする（要件確認済み）
-- **アクセシビリティ**: 確認ダイアログは `<dialog>` ベースで native focus trap を活用、ESC でキャンセル、`role="dialog" aria-modal="true"` を付与
 - **ルーム同期のレース条件**: 一時停止状態は startedAt とは独立した「経過秒」で同期する必要がある。pausedElapsed フィールドを SyncState に明示的に持たせる
+- **E2E での `window.confirm()` の扱い**: Playwright では `page.on("dialog", d => d.accept())` で確認ダイアログを受諾する。テストヘルパーに追加
 - **タイマー超過中の prev**: 超過時間で動作している人を done に戻すと負の totalElapsed が発生しうる → `Math.max(0, ...)` でクランプ
