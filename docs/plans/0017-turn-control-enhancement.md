@@ -2,16 +2,16 @@
 
 ## 動機
 
-スクラム運用中に発生する以下のニーズに応える:
+スクラム運用中の操作ミスからのリカバリーを主眼とする。
 
-1. **発表順を巻き戻したい** — 早送り（次へ）はあるが、間違って次へを押した、あるいは前の発表者に補足を求めたいケースで戻せない
-2. **発表時間を即興で調整したい** — 「あと30秒だけ延長したい」「もう少し短くしたい」のような微調整ができない
-3. **「ストップ」と「リセット」の意味が曖昧** — 「ストップ」は実質「最後の参加者をスキップして集計」、「リセット」は全クリア。タイマーを一時的に止めて続きから再開する機能がない
+1. **発表順を巻き戻したい** — 「次へ」を誤押下した、まだ話す内容があるのに次の人へ回してしまった、前の発表者に補足を求めたい等のケースで戻せない
+2. **「ストップ」と「リセット」の意味が曖昧** — 「ストップ」は実質「最後の参加者をスキップして集計」、「リセット」は全クリア。タイマーを一時的に止めて続きから再開する機能がない（中断ニーズ・誤押下リカバリーが効かない）
+
+**時間延長機能は導入しない**: 発表時間の超過はタイムボックスの赤字 = 時間予算の赤字として可視化することがデイリースクラムの本質。延長ボタンで時間調整できると可視化の意味が薄れる。中断が必要なケース（水を飲む・割り込み等）は一時停止でカバーできる。
 
 ### 既存実装の制約
 
 - `useTimer.stop()` は「現在の発表者を完了に移動 + タイマー終了」という複合操作で、純粋な一時停止ではない
-- `individualMaxTime` は `globalMaxTime / 残り人数` で computed なので、個別調整は `startedAt` シフトで対応する必要がある
 - `TimerView.vue` のボタン操作はすべて `useRoom().sendAction()` 経由でルーム同期されているため、追加アクションも同じルートに乗せる必要がある
 
 ---
@@ -76,42 +76,7 @@ function prev() {
 
 ---
 
-### 2. 残り時間の調整 (adjustTime)
-
-**仕様**: ±30秒 / ±1分 の4ボタン。動作中・一時停止中のみ有効。
-
-**実装**: `startedAt` をシフトすることで `currentElapsed = (Date.now() - startedAt) / 1000` の結果を相対的に変化させる。
-
-```ts
-function adjustTime(deltaSeconds: number) {
-  if (!isRunning.value && !isPaused.value) return;
-  if (startedAt === null && pausedElapsed === null) return;
-
-  // 残り時間を「増やす」=「経過秒を減らす」= startedAt を未来にずらす
-  // delta>0 で残り増、delta<0 で残り減
-  const shift = deltaSeconds * 1000;
-
-  if (isPaused.value) {
-    pausedElapsed = Math.max(0, pausedElapsed! - deltaSeconds);
-    currentElapsed.value = pausedElapsed;
-  } else {
-    startedAt = startedAt! + shift;
-    // 即座に再計算（次の tick を待たない）
-    currentElapsed.value = Math.max(0, Math.round((Date.now() - startedAt) / 1000));
-  }
-
-  // 時間を増やした場合、超過アラートを再発火可能にする
-  if (deltaSeconds > 0) resetAudioFlags();
-}
-```
-
-**音声フラグの扱い**:
-- 残り時間を増やしたとき: `wrapUpPlayed` / `timeupPlayed` / `overtime10Played` / `overtime30Played` を**残り時間に応じて再評価**する。シンプルに「+の場合は全部 false に戻す」で良い（既に再生済みなら次の閾値到達で再発火）
-- 残り時間を減らしたとき: フラグはそのまま。閾値を一気に飛び越えたら…までは厳密に対応しない（シンプル優先）
-
----
-
-### 3. 一時停止 / 再開 (pause / resume)
+### 2. 一時停止 / 再開 (pause / resume)
 
 **仕様**: 動作中に「一時停止」→ ボタンが「再開」に変わる。`currentElapsed` と `totalElapsed` は保持。
 
@@ -155,7 +120,7 @@ function resume() {
 
 ---
 
-### 4. 会の終了 (end)
+### 3. 会の終了 (end)
 
 **仕様**:
 - 既存の「リセット」ボタンを「会の終了」に改称
@@ -203,16 +168,16 @@ defineExpose({ open });
 
 ---
 
-### 5. UI レイアウト
+### 4. UI レイアウト
 
 **ボタン構成（動作中）**:
 ```
-[⏭ 次へ]  [⏸ 一時停止]  [⏮ 前へ]  [-1分][-30秒][+30秒][+1分]  [🔀 シャッフル]  [🏁 会の終了]
+[⏭ 次へ]  [⏸ 一時停止]  [⏮ 前へ]  [🔀 シャッフル]  [🏁 会の終了]
 ```
 
 **ボタン構成（一時停止中）**:
 ```
-[▶ 再開]  [⏭ 次へ]  [⏮ 前へ]  [-1分][-30秒][+30秒][+1分]  [🔀 シャッフル]  [🏁 会の終了]
+[▶ 再開]  [⏭ 次へ]  [⏮ 前へ]  [🔀 シャッフル]  [🏁 会の終了]
 ```
 
 **ボタン構成（停止中・待機中）**:
@@ -220,11 +185,9 @@ defineExpose({ open });
 [▶ スタート]  [⏮ 前へ]  [🔀 シャッフル]  [🏁 会の終了]
 ```
 
-時間調整ボタン群は別の `<div>` で論理グループ化し、視覚的にまとめる。
-
 ---
 
-### 6. ルーム同期（TimerAction 拡張）
+### 5. ルーム同期（TimerAction 拡張）
 
 ```ts
 export type TimerAction =
@@ -234,7 +197,6 @@ export type TimerAction =
   | { kind: "prev" }                                  // ★新規
   | { kind: "pause" }                                 // ★新規
   | { kind: "resume" }                                // ★新規
-  | { kind: "adjustTime"; deltaSeconds: number }      // ★新規
   | { kind: "end" }                                   // ★新規 (旧 reset と同義)
   | { kind: "reset" }                                 // 内部で使用継続
   | { kind: "markAbsent"; participantId: string }
@@ -258,7 +220,7 @@ export type SyncState = {
 };
 ```
 
-`useRoom.executeAction()` に prev / pause / resume / adjustTime / end のディスパッチを追加。`broadcastState()` で isPaused/pausedElapsed を含める。`applyTimerState()` で受信した一時停止状態を反映。
+`useRoom.executeAction()` に prev / pause / resume / end のディスパッチを追加。`broadcastState()` で isPaused/pausedElapsed を含める。`applyTimerState()` で受信した一時停止状態を反映。
 
 ---
 
@@ -266,15 +228,15 @@ export type SyncState = {
 
 ### Phase 1: タイマーロジック拡張
 
-- [ ] 1.1 `src/composables/useTimer.ts` — `isPaused`, `pausedElapsed` を追加。`pause()`, `resume()`, `prev()`, `adjustTime()`, `end()` を実装
+- [ ] 1.1 `src/composables/useTimer.ts` — `isPaused`, `pausedElapsed` を追加。`pause()`, `resume()`, `prev()`, `end()` を実装
 - [ ] 1.2 `src/composables/useTimer.ts` — `applyTimerState()` を isPaused/pausedElapsed 対応に拡張
 - [ ] 1.3 `src/composables/useTimer.ts` — `resetAudioFlags()` をプライベートヘルパーに切り出し（重複コード削減）
-- [ ] 1.4 `src/composables/useTimer.test.ts` — pause / resume / prev / adjustTime のユニットテスト追加
+- [ ] 1.4 `src/composables/useTimer.test.ts` — pause / resume / prev のユニットテスト追加
 
 ### Phase 2: 型・ルーム同期
 
-- [ ] 2.1 `src/types/room.ts` — `TimerAction` に prev / pause / resume / adjustTime / end を追加。`SyncState` に isPaused / pausedElapsed を追加
-- [ ] 2.2 `src/composables/useRoom.ts` — `executeAction()` に新規 5 種のディスパッチ追加
+- [ ] 2.1 `src/types/room.ts` — `TimerAction` に prev / pause / resume / end を追加。`SyncState` に isPaused / pausedElapsed を追加
+- [ ] 2.2 `src/composables/useRoom.ts` — `executeAction()` に新規 4 種のディスパッチ追加
 - [ ] 2.3 `src/composables/useRoom.ts` — `broadcastState()` に isPaused / pausedElapsed を含める
 - [ ] 2.4 `src/composables/useRoom.test.ts` — sync メッセージに新フィールドが含まれることを検証
 
@@ -285,17 +247,15 @@ export type SyncState = {
 - [ ] 3.3 `src/components/TimerView.vue` — 既存「ストップ」ボタン削除、「リセット」を「会の終了」に改称。ConfirmDialog を組み込み
 - [ ] 3.4 `src/components/TimerView.vue` — 「一時停止/再開」ボタン追加（isRunning/isPaused で表示切替）
 - [ ] 3.5 `src/components/TimerView.vue` — 「前へ戻る」ボタン追加（doneParticipants.length === 0 で disabled）
-- [ ] 3.6 `src/components/TimerView.vue` — 時間調整ボタン群（-1m/-30s/+30s/+1m）追加。`isRunning || isPaused` のとき有効
-- [ ] 3.7 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleAdjustTime, handleEnd）。ルームモード時は sendAction 経由
+- [ ] 3.6 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleEnd）。ルームモード時は sendAction 経由
 
 ### Phase 4: E2E テスト
 
 - [ ] 4.1 `e2e/timer-controls.spec.ts` — 新規。スタンドアロンモードで以下を検証:
   - 前へ戻る: 2人発表後に prev で 2人目に戻る → 元の done が空に近づく
-  - 時間調整: +30秒で残り時間表示が増加、-1分で減少
   - 一時停止/再開: pause で経過時間が固定、resume で続きから増加
   - 会の終了: ConfirmDialog のキャンセルボタンクリック → 状態保持。OK ボタンクリック → 全リセット
-- [ ] 4.2 `e2e/room-sync.spec.ts` — 既存テストに pause / prev / adjustTime / end の同期シナリオを追加
+- [ ] 4.2 `e2e/room-sync.spec.ts` — 既存テストに pause / prev / end の同期シナリオを追加
 
 ### Phase 5: 検証
 
@@ -311,7 +271,7 @@ export type SyncState = {
 
 | ファイル | 変更種別 |
 |---|---|
-| `src/composables/useTimer.ts` | 拡張: isPaused / pausedElapsed / pause / resume / prev / adjustTime / end / resetAudioFlags |
+| `src/composables/useTimer.ts` | 拡張: isPaused / pausedElapsed / pause / resume / prev / end / resetAudioFlags |
 | `src/composables/useTimer.test.ts` | 拡張: 新規 API のテスト追加 |
 | `src/composables/useRoom.ts` | 拡張: 新規 TimerAction のディスパッチ |
 | `src/composables/useRoom.test.ts` | 拡張: sync メッセージ検証 |
@@ -327,7 +287,6 @@ export type SyncState = {
 ## 注意事項
 
 - **既存テストの後方互換性**: `TimerAction` の `stop` / `reset` は内部実装で残す（テストファイルが参照している可能性）。UI からの直接呼び出しは廃止
-- **音声フラグの再評価**: `adjustTime` で残り時間を増やしたら、既に再生済みのアラートを再発火可能にする（シンプル優先で全 false 戻し）
 - **prev の境界**: `doneParticipants.length === 0` のときボタン disabled。動作中も含めて押せるようにする（要件確認済み）
 - **ルーム同期のレース条件**: 一時停止状態は startedAt とは独立した「経過秒」で同期する必要がある。pausedElapsed フィールドを SyncState に明示的に持たせる
 - **HTML `<dialog>` のサポート状況**: Baseline 2022 (Chrome 37+ / Edge 79+ / Safari 15.4+ / Firefox 98+)。本プロジェクトは PeerJS (WebRTC) を使う SPA なのでこの要件で十分
