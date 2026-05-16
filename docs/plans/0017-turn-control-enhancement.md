@@ -166,20 +166,39 @@ function resume() {
 - 既存の「ストップ」ボタンは廃止する（要件: 2つに整理）
 - 動作中に「会の終了」を押した場合も、確認後にリセットする
 
-**確認ダイアログの実装**: `window.confirm()` を使う。
+**確認ダイアログの実装**: HTML `<dialog>` 要素ベースの薄いラッパー `ConfirmDialog.vue` を新規作成する。
 
-理由 (Feedback.md のアクセシビリティ方針に従う):
-- ネイティブブラウザ上での見栄え・挙動を一級扱いする方針
-- 確認ダイアログは一瞬しか表示されない補助 UI で、デザイン自作のコストに見合わない
-- `window.confirm()` はブラウザネイティブのフォーカス管理・ESC キャンセル・モーダルブロックを自動提供
-- 自前 `<dialog>` 要素を作るとフォーカストラップや ESC ハンドラを再実装するコストが発生し、メインタスクの主旨から外れる
+理由:
+- `window.confirm()` は貧弱（スタイル不可・ブラウザ全体のフォーカスを奪う・抑止チェックが出る）で GUI 操作体験を損なう
+- HTML `<dialog>` 要素は Baseline 2022 (Chrome 37+ / Edge 79+ / Safari 15.4+ / Firefox 98+) で本プロジェクトの対象ブラウザを満たす
+- `showModal()` でフォーカス管理・Esc キャンセル・`::backdrop`・focus trap が**すべてブラウザ側で自動取得**できるので、自前で ARIA / Esc ハンドラ / フォーカストラップを再実装するリスクなし
+- スタイリングは UnoCSS で UI 整合できる
 
-```ts
-function handleEnd() {
-  if (!window.confirm("会を終了するのだ？参加者の発表履歴はクリアされるのだ。")) return;
-  if (roomId.value) sendAction({ kind: "end" });
-  else end();
-}
+実装ポリシー:
+- 自前で `role="dialog"` / `aria-modal` / Esc ハンドラ / focus trap を書かない（ネイティブ任せ）
+- `<dialog>` のデフォルト挙動を活用した薄いラッパーに留める
+- `<slot>` でタイトル・本文・ボタンラベルを差し替えられる程度
+
+```vue
+<!-- ConfirmDialog.vue (概略) -->
+<script setup lang="ts">
+const props = defineProps<{ message: string; okLabel?: string; cancelLabel?: string }>();
+const emit = defineEmits<{ confirm: []; cancel: [] }>();
+const dialogRef = ref<HTMLDialogElement | null>(null);
+function open() { dialogRef.value?.showModal(); }
+function onOk() { emit("confirm"); dialogRef.value?.close(); }
+function onCancel() { emit("cancel"); dialogRef.value?.close(); }
+defineExpose({ open });
+</script>
+<template>
+  <dialog ref="dialogRef" class="rounded-lg p-6 ...">
+    <p>{{ message }}</p>
+    <div class="flex gap-2 mt-4 justify-end">
+      <button @click="onCancel">{{ cancelLabel ?? "キャンセル" }}</button>
+      <button @click="onOk">{{ okLabel ?? "OK" }}</button>
+    </div>
+  </dialog>
+</template>
 ```
 
 ---
@@ -261,11 +280,13 @@ export type SyncState = {
 
 ### Phase 3: UI
 
-- [ ] 3.1 `src/components/TimerView.vue` — 既存「ストップ」ボタン削除、「リセット」を「会の終了」に改称。クリック時に `window.confirm()` で確認
-- [ ] 3.2 `src/components/TimerView.vue` — 「一時停止/再開」ボタン追加（isRunning/isPaused で表示切替）
-- [ ] 3.3 `src/components/TimerView.vue` — 「前へ戻る」ボタン追加（doneParticipants.length === 0 で disabled）
-- [ ] 3.4 `src/components/TimerView.vue` — 時間調整ボタン群（-1m/-30s/+30s/+1m）追加。`isRunning || isPaused` のとき有効
-- [ ] 3.5 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleAdjustTime, handleEnd）。ルームモード時は sendAction 経由
+- [ ] 3.1 `src/components/ConfirmDialog.vue` — 新規。HTML `<dialog>` の薄いラッパー（自前 ARIA / focus trap / Esc は実装しない）
+- [ ] 3.2 `src/components/ConfirmDialog.test.ts` — ラッパーの open / confirm / cancel イベントの最小テスト
+- [ ] 3.3 `src/components/TimerView.vue` — 既存「ストップ」ボタン削除、「リセット」を「会の終了」に改称。ConfirmDialog を組み込み
+- [ ] 3.4 `src/components/TimerView.vue` — 「一時停止/再開」ボタン追加（isRunning/isPaused で表示切替）
+- [ ] 3.5 `src/components/TimerView.vue` — 「前へ戻る」ボタン追加（doneParticipants.length === 0 で disabled）
+- [ ] 3.6 `src/components/TimerView.vue` — 時間調整ボタン群（-1m/-30s/+30s/+1m）追加。`isRunning || isPaused` のとき有効
+- [ ] 3.7 `src/components/TimerView.vue` — ハンドラ関数追加（handlePause, handleResume, handlePrev, handleAdjustTime, handleEnd）。ルームモード時は sendAction 経由
 
 ### Phase 4: E2E テスト
 
@@ -273,7 +294,7 @@ export type SyncState = {
   - 前へ戻る: 2人発表後に prev で 2人目に戻る → 元の done が空に近づく
   - 時間調整: +30秒で残り時間表示が増加、-1分で減少
   - 一時停止/再開: pause で経過時間が固定、resume で続きから増加
-  - 会の終了: `page.on("dialog", d => d.dismiss())` でキャンセル → 状態保持。`d.accept()` で OK → 全リセット
+  - 会の終了: ConfirmDialog のキャンセルボタンクリック → 状態保持。OK ボタンクリック → 全リセット
 - [ ] 4.2 `e2e/room-sync.spec.ts` — 既存テストに pause / prev / adjustTime / end の同期シナリオを追加
 
 ### Phase 5: 検証
@@ -295,7 +316,9 @@ export type SyncState = {
 | `src/composables/useRoom.ts` | 拡張: 新規 TimerAction のディスパッチ |
 | `src/composables/useRoom.test.ts` | 拡張: sync メッセージ検証 |
 | `src/types/room.ts` | 拡張: TimerAction / SyncState 拡張 |
-| `src/components/TimerView.vue` | UI 改修: ボタン構成変更、window.confirm 統合 |
+| `src/components/TimerView.vue` | UI 改修: ボタン構成変更、ConfirmDialog 統合 |
+| `src/components/ConfirmDialog.vue` | 新規: `<dialog>` ベースの薄いラッパー |
+| `src/components/ConfirmDialog.test.ts` | 新規: ラッパーの最小テスト |
 | `e2e/timer-controls.spec.ts` | 新規: 新機能の E2E |
 | `e2e/room-sync.spec.ts` | 拡張: 新アクションの同期検証 |
 
@@ -307,5 +330,7 @@ export type SyncState = {
 - **音声フラグの再評価**: `adjustTime` で残り時間を増やしたら、既に再生済みのアラートを再発火可能にする（シンプル優先で全 false 戻し）
 - **prev の境界**: `doneParticipants.length === 0` のときボタン disabled。動作中も含めて押せるようにする（要件確認済み）
 - **ルーム同期のレース条件**: 一時停止状態は startedAt とは独立した「経過秒」で同期する必要がある。pausedElapsed フィールドを SyncState に明示的に持たせる
-- **E2E での `window.confirm()` の扱い**: Playwright では `page.on("dialog", d => d.accept())` で確認ダイアログを受諾する。テストヘルパーに追加
+- **HTML `<dialog>` のサポート状況**: Baseline 2022 (Chrome 37+ / Edge 79+ / Safari 15.4+ / Firefox 98+)。本プロジェクトは PeerJS (WebRTC) を使う SPA なのでこの要件で十分
+- **Vitest での `<dialog>`**: happy-dom / jsdom は `showModal()` / `close()` を完全サポート (2024 以降)。テストではこのまま呼び出せる
+- **Playwright での `<dialog>`**: 通常の DOM 要素として扱えるので `page.locator('dialog')` で操作可能（`page.on("dialog", ...)` ハンドラは不要）
 - **タイマー超過中の prev**: 超過時間で動作している人を done に戻すと負の totalElapsed が発生しうる → `Math.max(0, ...)` でクランプ
