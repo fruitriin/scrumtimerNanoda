@@ -30,7 +30,7 @@
 
 | ファイル | 要約 | キーワード |
 |---|---|---|
-| [vue-coding-patterns.md](vue-coding-patterns.md) | defineAsyncComponent バンドル分割、ref<Map> リアクティビティ、Tiptap 外部同期、DOMPurify XSS対策、ARIA アクセシビリティパターン | defineAsyncComponent, バンドル分割, Map, リアクティビティ, Tiptap, setContent, DOMPurify, XSS, v-html, ARIA, progressbar, role |
+| [vue-coding-patterns.md](vue-coding-patterns.md) | defineAsyncComponent バンドル分割、ref<Map> リアクティビティ、Tiptap 外部同期、DOMPurify XSS対策、ARIA 実装方針（ネイティブ体験を一級、最小限） | defineAsyncComponent, バンドル分割, Map, リアクティビティ, Tiptap, setContent, DOMPurify, XSS, v-html, ARIA, progressbar, role, ネイティブ体験 |
 
 ## 品質ゲート・開発プロセス
 

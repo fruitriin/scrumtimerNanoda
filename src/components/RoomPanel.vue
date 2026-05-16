@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// FIXME(plan-0018): aria-* / role 属性の再評価対象。オーナーフィードバック (2026-05-16) に基づき
+// ネイティブブラウザ体験を一級とする方針へ移行中。Plan 0018 で残置・除去を判断する。
 import { ref, computed } from "vue";
 import { useRoom } from "../composables/useRoom";
 import { useRouter } from "vue-router";
