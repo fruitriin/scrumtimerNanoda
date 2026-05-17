@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// FIXME(plan-0018): aria-* / role 属性の再評価対象。オーナーフィードバック (2026-05-16) に基づき
+// GUI 操作体験を一級とする方針へ移行中。Plan 0018 で残置・除去を判断する。
 import { ref, computed, defineAsyncComponent } from "vue";
 import { useTimer } from "../composables/useTimer";
 import { useParticipants } from "../composables/useParticipants";

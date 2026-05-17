@@ -3,7 +3,7 @@
 `docs/plans/` の完了状態・優先度をトラックする。
 `docs/plans/` と TODO が一致しなければ TODO を編集する。
 
-## 現在のフェーズ: Phase 2 — 機能拡充
+## 現在のフェーズ: Phase 2 — 機能拡充（Phase 3 — プリセット導入 を計画中）
 
 ## バックログ
 
@@ -23,6 +23,11 @@
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0014-e2e-test-expansion.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0015-error-handling.md`~~ | ~~完了~~ |
 | ~~差込~~ | ~~品質~~ | ~~`docs/plans/0016-pwa-offline.md`~~ | ~~却下（ネットワーク不安定環境での利用想定なし）~~ |
+| 6 | Phase 2 | `docs/plans/0017-turn-control-enhancement.md` | 未着手 |
+| 7 | 品質 | `docs/plans/0018-accessibility-policy-realignment.md` | 未着手（0017 完了後に着手） |
+| 8 | Phase 3 | `docs/plans/0019-preset-foundation.md` | 未着手（0017 完了後に着手） |
+| 9 | Phase 3 | `docs/plans/0020-meeting-session-adjustments.md` | 未着手（0019 完了後に着手） |
+| 10 | Phase 3 | `docs/plans/0021-phase-mode-timer.md` | 未着手（0019/0020 完了後に着手） |
 
 オーナーリクエスト:
 タスクが無くなったら以下に取り組んでください
